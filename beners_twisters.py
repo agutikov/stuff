@@ -60,6 +60,10 @@ g_acc=5*9.81/MODEL_SCALE
 
 DT=1
 
+show_density=False
+max_fps = 80
+
+test_mode=False
 
 ########################### Model ##############################################
 
@@ -120,20 +124,43 @@ def new_grid(w, h):
 
 grid = new_grid(grid_width, grid_height)
 
-for iy,row in enumerate(grid):
-	for ix,cell in enumerate(row):
-		x = ix*2*gradient_radius*x_spacing + gradient_radius*x_spacing
-		y = iy*2*gradient_radius*y_spacing + gradient_radius*y_spacing
-		x *= MODEL_SCALE
-		y *= MODEL_SCALE
 
-		t = float(random.randrange(int(T_MIN), int(T_MAX)))
-		qx = float(random.randrange(-10, 10))
-		qy = float(random.randrange(-10, 10))
+def append_atom(grid, atom):
+	ix = int(atom.pos.x/MODEL_SCALE/(2*gradient_radius*x_spacing))
+	iy = int(atom.pos.y/MODEL_SCALE/(2*gradient_radius*y_spacing))
+	grid[iy][ix].append(atom)
 
-		atom = Atom(Point(x, y), t_to_vel(t, Point(qx, qy)), t, Point(0, 0))
+def create_test_atom(ix, iy, dx, dy):
+	x = ix*2*gradient_radius*x_spacing + gradient_radius*x_spacing
+	y = iy*2*gradient_radius*y_spacing + gradient_radius*y_spacing
+	x *= MODEL_SCALE
+	y *= MODEL_SCALE
+	vel = Point(dx, dy)
+	return Atom(Point(x, y), vel, vel_to_t(vel), Point(0, 0))
 
-		cell.append(atom)
+if test_mode:
+	# g_acc = 0
+	show_density = True
+	max_fps = 3
+
+	append_atom(grid, create_test_atom(1.5, 0.5, -100, 100))
+	append_atom(grid, create_test_atom(0.5, 1.5, 100, -100))
+
+else:
+	for iy,row in enumerate(grid):
+		for ix,cell in enumerate(row):
+			x = ix*2*gradient_radius*x_spacing + gradient_radius*x_spacing
+			y = iy*2*gradient_radius*y_spacing + gradient_radius*y_spacing
+			x *= MODEL_SCALE
+			y *= MODEL_SCALE
+
+			t = float(random.randrange(int(T_MIN), int(T_MAX)))
+			qx = float(random.randrange(-10, 10))
+			qy = float(random.randrange(-10, 10))
+
+			atom = Atom(Point(x, y), t_to_vel(t, Point(qx, qy)), t, Point(0, 0))
+
+			cell.append(atom)
 
 ###################### Translating from Model into Graphics#####################
 
@@ -322,13 +349,12 @@ def run_model (grid, dt):
 				# Dynamics
 				atom.acc = Point(0, -g_acc)
 
-				for pix in [ix, ix+1]:
-					for piy in [iy, iy+1]:
-						if pix < len(row) and piy < len(grid):
+				for pix in [ix-1, ix, ix+1]:
+					for piy in [iy-1, iy, iy+1]:
+						if pix >= 0 and piy >= 0 and pix < len(row) and piy < len(grid):
 							for a in grid[piy][pix]:
 								if not a is atom:
 									impact(atom, a, dt)
-
 				# Kinematics
 				atom.vel.x += atom.acc.x*dt
 				atom.vel.y += atom.acc.y*dt
@@ -367,7 +393,7 @@ def run_model (grid, dt):
 
 def render (grid):
 
-	if False:
+	if show_density:
 		max_atoms_in_cell=x_spacing*y_spacing*2
 		for iy,row in enumerate(grid):
 			for ix,cell in enumerate(row):
@@ -393,7 +419,7 @@ def render (grid):
 	pygame.display.update()
 
 
-max_fps = 80
+
 iter_count = 0
 model_time = 0
 render_time = 0
