@@ -61,27 +61,42 @@ class Ball:
 		self.acc=_a
 
 
-R = 149597870700
-V = 29783
-M0 = 2*10**30
+#R = 149597870700
+R = 14959787070
+#V0 = 0
+V0 = 10000
+#V1 = 29783
+V1 = 10000
+#M0 = 2*10**30
+M0 = 6*10**24
 M1 = 6*10**24
 G = 6.67*10**-11
 
-window_width = 400
-window_height = 300
+window_width_px = 400
+window_height_px = 300
+start_distance_px = 100
+start_grid_size_px = 80
+
+TIME_ACCEL = 3600
+
+max_fps = 100
+
 
 class Model:
 
 	def __init__(self):
-		self.time_accel=360000/1000
+		self.time_accel=TIME_ACCEL
 
-		self.model_scale=R/100
-		self.model_viewport_width = window_width*self.model_scale
-		self.model_viewport_height = window_height*self.model_scale
+		self.model_scale=R/start_distance_px
+
+		self.model_viewport_width = window_width_px*self.model_scale
+		self.model_viewport_height = window_height_px*self.model_scale
 		self.model_viewport_start = Point(0, 0)
 
-		self.star = Ball(M0, 20, Point(0,0), Point(0,0), Point(0,0))
-		self.planet = Ball(M1, 10, Point(0, R), Point(V,0), Point(0,0))
+		self.grid_size = start_grid_size_px*self.model_scale
+
+		self.star = Ball(M0, 20, Point(0,0), Point(-V0,-V0), Point(0,0))
+		self.planet = Ball(M1, 10, Point(0, R), Point(V1,0), Point(0,0))
 
 
 	def run(self, dt_ms):
@@ -89,25 +104,39 @@ class Model:
 		s = vdif(self.star.pos, self.planet.pos)
 		n = norm(s)
 
-		star_new_pos = vsum(self.star.pos, vmul(self.star.vel, self.time_accel*dt_ms))
-		star_new_vel = vsum(self.star.vel, vmul(self.star.acc, self.time_accel*dt_ms))
-		star_new_acc = vmul(invert(n), G*self.planet.m/d2)
+		self.star.acc = vmul(invert(n), G*self.planet.m/d2)
+		self.star.vel = vsum(self.star.vel, vmul(self.star.acc, self.time_accel*dt_ms))
+		self.star.pos = vsum(self.star.pos, vmul(self.star.vel, self.time_accel*dt_ms))
 
-		planet_new_pos = vsum(self.planet.pos , vmul(self.planet.vel, self.time_accel*dt_ms))
-		planet_new_vel = vsum(self.planet.vel , vmul(self.planet.acc, self.time_accel*dt_ms))
-		planet_new_acc = vmul(n, G*self.star.m/d2)
+		self.planet.acc = vmul(n, G*self.star.m/d2)
+		self.planet.vel = vsum(self.planet.vel , vmul(self.planet.acc, self.time_accel*dt_ms))
+		self.planet.pos = vsum(self.planet.pos , vmul(self.planet.vel, self.time_accel*dt_ms))
 
-		self.star.pos = star_new_pos
-		self.star.vel = star_new_vel
-		self.star.acc = star_new_acc
-		self.planet.pos = planet_new_pos
-		self.planet.vel = planet_new_vel
-		self.planet.acc = planet_new_acc
 
-		model_viewport_width = max(self.model_viewport_width, 3*max(abs(self.planet.pos.x), abs(self.star.pos.x)))
-		model_viewport_height = max(self.model_viewport_height, 3*max(abs(self.planet.pos.y), abs(self.star.pos.y)))
+		self.model_viewport_start = self.star.pos
 
-		self.model_scale = max(self.model_viewport_width/window_width, self.model_viewport_height/window_height)
+		self.model_viewport_width = max(self.model_viewport_width,
+						3*max(abs(self.planet.pos.x - self.model_viewport_start.x), abs(self.star.pos.x - self.model_viewport_start.x)))
+		self.model_viewport_height = max(self.model_viewport_height,
+						3*max(abs(self.planet.pos.y - self.model_viewport_start.y), abs(self.star.pos.y - self.model_viewport_start.y)))
+
+		self.model_scale = max(self.model_viewport_width/window_width_px, self.model_viewport_height/window_height_px)
+
+		self.model_viewport_width = 6*min(self.model_viewport_width/6,
+						max(abs(self.planet.pos.x - self.model_viewport_start.x), abs(self.star.pos.x - self.model_viewport_start.x)))
+		self.model_viewport_height = 6*min(self.model_viewport_height/6,
+						max(abs(self.planet.pos.y - self.model_viewport_start.y), abs(self.star.pos.y - self.model_viewport_start.y)))
+
+		self.model_scale = max(self.model_viewport_width/window_width_px, self.model_viewport_height/window_height_px)
+
+		self.model_viewport_width = window_width_px*self.model_scale
+		self.model_viewport_height = window_height_px*self.model_scale
+
+
+		if self.grid_size/self.model_scale < start_grid_size_px/2:
+			self.grid_size *= 2
+		elif self.grid_size/self.model_scale > start_grid_size_px*2:
+			self.grid_size /= 2
 
 
 model = Model()
@@ -125,22 +154,38 @@ GREEN = pygame.Color(0, 255, 0, 255)
 RED = pygame.Color(255, 0, 0, 255)
 BLUE = pygame.Color(0, 0, 255, 255)
 
-W = pygame.display.set_mode((window_width, window_height))
-S = pygame.Surface((window_width, window_height), pygame.SRCALPHA)
+W = pygame.display.set_mode((window_width_px, window_height_px))
+S = pygame.Surface((window_width_px, window_height_px), pygame.SRCALPHA)
 
 
 def render():
-
 	S.fill(BLACK)
 
-	pygame.draw.circle(S, WHITE,
-		(int( (model.star.pos.x - model.model_viewport_start.x)/model.model_scale + window_width/2 ),
-		 int( -(model.star.pos.y - model.model_viewport_start.y)/model.model_scale + window_height/2 )),
+
+	left_border_x = model.model_viewport_start.x - window_width_px/2*model.model_scale
+	line_x = math.ceil(left_border_x/model.grid_size)*model.grid_size
+	while line_x < (left_border_x + window_width_px*model.model_scale):
+		line_x_px = (line_x - model.model_viewport_start.x)/model.model_scale + window_width_px/2
+		pygame.draw.line(S, WHITE, (line_x_px, 0), (line_x_px, window_height_px))
+		line_x += model.grid_size
+
+
+	top_border_y = model.model_viewport_start.y - window_height_px/2*model.model_scale
+	line_y = math.ceil(top_border_y/model.grid_size)*model.grid_size
+	while line_y < (top_border_y + window_height_px*model.model_scale):
+		line_y_px = -(line_y - model.model_viewport_start.y)/model.model_scale + window_height_px/2
+		pygame.draw.line(S, WHITE, (0, line_y_px), (window_width_px, line_y_px))
+		line_y += model.grid_size
+
+
+	pygame.draw.circle(S, RED,
+		(int( (model.star.pos.x - model.model_viewport_start.x)/model.model_scale + window_width_px/2 ),
+		 int( -(model.star.pos.y - model.model_viewport_start.y)/model.model_scale + window_height_px/2 )),
 		model.star.r, 0)
 
 	pygame.draw.circle(S, BLUE,
-		(int( (model.planet.pos.x - model.model_viewport_start.x)/model.model_scale + window_width/2 ),
-		 int( -(model.planet.pos.y - model.model_viewport_start.y)/model.model_scale + window_height/2 )),
+		(int( (model.planet.pos.x - model.model_viewport_start.x)/model.model_scale + window_width_px/2 ),
+		 int( -(model.planet.pos.y - model.model_viewport_start.y)/model.model_scale + window_height_px/2 )),
 		model.planet.r, 0)
 
 	W.blit(S, (0, 0))
@@ -153,8 +198,6 @@ def render():
 
 
 prev_time = pygame.time.get_ticks()
-
-max_fps = 100
 
 while True:
 	for event in pygame.event.get():
