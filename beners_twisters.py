@@ -23,17 +23,17 @@ http://www.philsci.univ.kiev.ua/biblio/vrema-haos.html
 
 
 
-gradient_radius = 3
+gradient_radius = 20
 gradient_center_opacity = 255
 gradient_edge_opacity = 0
 
-grid_size = 20
+grid_size = 5
 grid_width = grid_size*2
 grid_height = grid_size*2
 
 # integer multiply of diameter in cell
 x_spacing = 1.5
-y_spacing = 2
+y_spacing = 1.5
 
 boiler_width = int(2*gradient_radius*grid_width*x_spacing)
 boiler_height = int(2*gradient_radius*grid_height*y_spacing)
