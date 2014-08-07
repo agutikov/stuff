@@ -16,7 +16,10 @@
    id="svg2985"
    version="1.1"
    inkscape:version="0.48.4 r9939"
-   sodipodi:docname="hackerspace_business_card_front.svg">
+   sodipodi:docname="hackerspace_business_card_front.svg"
+   inkscape:export-filename="/home/user/work/stuff/hackerspace_business_card_front.png"
+   inkscape:export-xdpi="682.76691"
+   inkscape:export-ydpi="682.76691">
   <defs
      id="defs3">
     <linearGradient
@@ -1511,7 +1514,7 @@
      inkscape:cx="221.2039"
      inkscape:cy="110.57168"
      inkscape:document-units="mm"
-     inkscape:current-layer="layer2"
+     inkscape:current-layer="layer1"
      showgrid="false"
      units="mm"
      inkscape:window-width="1331"
@@ -1528,7 +1531,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -1601,7 +1604,7 @@
          id="tspan3302"
          x="105.12231"
          y="113.16536"
-         style="font-size:9px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;text-anchor:middle;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans">мастерская-клуб, где энтузиасты </tspan><tspan
+         style="font-size:9px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;text-anchor:middle;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans">Мастерская-клуб, где энтузиасты </tspan><tspan
          sodipodi:role="line"
          x="105.12231"
          y="124.41536"
