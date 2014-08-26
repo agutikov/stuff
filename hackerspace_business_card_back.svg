@@ -11,12 +11,15 @@
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="90mm"
-   height="50mm"
+   width="333.07086"
+   height="187.79527"
    id="svg2985"
    version="1.1"
    inkscape:version="0.48.4 r9939"
-   sodipodi:docname="hackerspace_business_card_back.svg">
+   sodipodi:docname="hackerspace_business_card_back.svg"
+   inkscape:export-filename="/home/user/work/stuff/hackerspace_business_card_back.png"
+   inkscape:export-xdpi="299.93619"
+   inkscape:export-ydpi="299.93619">
   <defs
      id="defs3">
     <linearGradient
@@ -1485,9 +1488,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="2.0000001"
-     inkscape:cx="155.95136"
-     inkscape:cy="76.743163"
+     inkscape:zoom="2.8284271"
+     inkscape:cx="195.20702"
+     inkscape:cy="98.015266"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -1497,7 +1500,11 @@
      inkscape:window-x="-2"
      inkscape:window-y="-3"
      inkscape:window-maximized="1"
-     showguides="false" />
+     showguides="false"
+     fit-margin-top="5"
+     fit-margin-right="5"
+     fit-margin-bottom="5"
+     fit-margin-left="5" />
   <metadata
      id="metadata2989">
     <rdf:RDF>
@@ -1506,14 +1513,15 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
   <g
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
-     id="layer1">
+     id="layer1"
+     transform="translate(17.711328,-7.0870421)">
     <flowRoot
        xml:space="preserve"
        id="flowRoot3008"
@@ -1566,74 +1574,76 @@
        height="522.31665"
        width="403.33334"
        clip-path="url(#clipPath3286)"
-       transform="matrix(1.0025968,0,0,0.99980521,-0.83028907,-0.01562112)" />
+       transform="matrix(1.047172,0,0,1.0597976,-18.586184,7.0637131)" />
     <text
        xml:space="preserve"
-       style="font-size:16px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
-       x="8.4393377"
-       y="26.159269"
+       style="font-size:16.40632439px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="2.904681"
+       y="37.459381"
        id="text5471"
-       sodipodi:linespacing="125%"><tspan
+       sodipodi:linespacing="125%"
+       transform="scale(0.98642258,1.0137643)"><tspan
          sodipodi:role="line"
-         x="8.4393377"
-         y="26.159269"
-         style="font-size:9px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans"
+         x="2.904681"
+         y="37.459381"
+         style="font-size:9.22855854px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans"
          id="tspan3673">Уточнить время когда у нас открыто можно </tspan><tspan
          sodipodi:role="line"
-         x="8.4393377"
-         y="37.409267"
-         style="font-size:9px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans"
+         x="2.904681"
+         y="48.995079"
+         style="font-size:9.22855854px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans"
          id="tspan3679" /><tspan
          sodipodi:role="line"
-         x="8.4393377"
-         y="48.659271"
-         style="font-size:9px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans"
+         x="2.904681"
+         y="60.530777"
+         style="font-size:9.22855854px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans"
          id="tspan3681">в рассылке:</tspan><tspan
          sodipodi:role="line"
-         x="8.4393377"
-         y="61.902767"
-         style="font-size:11px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#0000ff;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans"
+         x="2.904681"
+         y="74.110603"
+         style="font-size:11.27934742px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#0000ff;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans"
          id="tspan3675">groups.google.com/d/forum/hackerspace-minsk</tspan><tspan
          sodipodi:role="line"
-         x="8.4393377"
-         y="75.652771"
-         style="font-size:9px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans"
+         x="2.904681"
+         y="88.209778"
+         style="font-size:9.22855854px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans"
          id="tspan6265" /><tspan
          sodipodi:role="line"
-         x="8.4393377"
-         y="87.409271"
-         style="font-size:9px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans"
+         x="2.904681"
+         y="100.26484"
+         style="font-size:9.22855854px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans"
          id="tspan3683">в группах:</tspan><tspan
          sodipodi:role="line"
-         x="8.4393377"
-         y="101.64951"
-         style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#0000ff;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans"
+         x="2.904681"
+         y="114.86673"
+         style="font-size:12.30474472px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#0000ff;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans"
          id="tspan6271">facebook.com/hs.minsk </tspan><tspan
          sodipodi:role="line"
-         x="8.4393377"
-         y="116.64951"
-         style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#0000ff;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans"
+         x="2.904681"
+         y="130.24767"
+         style="font-size:12.30474472px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#0000ff;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans"
          id="tspan5489">vk.com/hackerspace_minsk</tspan><tspan
          sodipodi:role="line"
-         x="8.4393377"
-         y="131.64951"
-         style="font-size:9px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans"
+         x="2.904681"
+         y="145.62859"
+         style="font-size:9.22855854px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans"
          id="tspan6279" /><tspan
          sodipodi:role="line"
-         x="8.4393377"
-         y="143.65927"
-         style="font-size:9px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans"
+         x="2.904681"
+         y="157.94334"
+         style="font-size:9.22855854px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans"
          id="tspan3687">или по телефону:</tspan><tspan
          sodipodi:role="line"
-         x="8.4393377"
-         y="154.90927"
-         style="font-size:9px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans"
+         x="2.904681"
+         y="169.47902"
+         style="font-size:9.22855854px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans"
          id="tspan3677">+375 25 9418152 (Алексей)</tspan></text>
   </g>
   <g
      inkscape:groupmode="layer"
      id="layer2"
-     inkscape:label="Layer">
+     inkscape:label="Layer"
+     transform="translate(17.711328,-7.0870421)">
     <flowRoot
        xml:space="preserve"
        id="flowRoot3032"
@@ -1650,7 +1660,7 @@
          style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;font-family:DejaVu Sans Mono;-inkscape-font-specification:DejaVu Sans Mono" /></flowRoot>    <flowRoot
        xml:space="preserve"
        id="flowRoot3371"
-       style="fill:black;stroke:none;stroke-opacity:1;stroke-width:1px;stroke-linejoin:miter;stroke-linecap:butt;fill-opacity:1;font-family:Sans;font-style:normal;font-weight:normal;font-size:16px;line-height:125%;letter-spacing:0px;word-spacing:0px"><flowRegion
+       style="font-size:16px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"><flowRegion
          id="flowRegion3373"><rect
            id="rect3375"
            width="71"

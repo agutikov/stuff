@@ -11,15 +11,15 @@
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="90mm"
-   height="50mm"
+   width="333.06009"
+   height="187.78346"
    id="svg2985"
    version="1.1"
    inkscape:version="0.48.4 r9939"
    sodipodi:docname="hackerspace_business_card_front.svg"
-   inkscape:export-filename="/home/user/work/stuff/hackerspace_business_card_front.png"
-   inkscape:export-xdpi="682.76691"
-   inkscape:export-ydpi="682.76691">
+   inkscape:export-filename="/home/user/work/stuff/hackerspace_business_card_front.tiff.png"
+   inkscape:export-xdpi="299.95001"
+   inkscape:export-ydpi="299.95001">
   <defs
      id="defs3">
     <linearGradient
@@ -1502,6 +1502,17 @@
          x="303"
          y="-15.834636" />
     </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath3448">
+      <rect
+         style="fill:#0000ff;fill-opacity:1;fill-rule:nonzero;stroke:none"
+         id="rect3450"
+         width="334.46152"
+         height="188.79752"
+         x="-18.425928"
+         y="6.7854748" />
+    </clipPath>
   </defs>
   <sodipodi:namedview
      id="base"
@@ -1510,11 +1521,11 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="2.0000001"
-     inkscape:cx="221.2039"
-     inkscape:cy="110.57168"
+     inkscape:zoom="2"
+     inkscape:cx="163.17448"
+     inkscape:cy="80.738553"
      inkscape:document-units="mm"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="layer2"
      showgrid="false"
      units="mm"
      inkscape:window-width="1331"
@@ -1522,7 +1533,11 @@
      inkscape:window-x="-2"
      inkscape:window-y="-3"
      inkscape:window-maximized="1"
-     showguides="false" />
+     showguides="false"
+     fit-margin-top="5"
+     fit-margin-bottom="5"
+     fit-margin-right="5"
+     fit-margin-left="5" />
   <metadata
      id="metadata2989">
     <rdf:RDF>
@@ -1538,7 +1553,8 @@
   <g
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
-     id="layer1">
+     id="layer1"
+     transform="translate(17.718821,-7.0924158)">
     <flowRoot
        xml:space="preserve"
        id="flowRoot3008"
@@ -1591,44 +1607,45 @@
        height="522.31665"
        width="403.33334"
        clip-path="url(#clipPath3286)"
-       transform="matrix(1.0025968,0,0,0.99980521,-0.83028907,-0.01562112)"
+       transform="matrix(1.0471626,0,0,1.059819,-18.593669,7.0612739)"
        style="fill:#ffffff" />
     <text
        xml:space="preserve"
-       style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans"
-       x="103.6897"
-       y="113.16536"
+       style="font-size:14.33418655px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans"
+       x="99.126625"
+       y="124.09975"
        id="text3300"
-       sodipodi:linespacing="125%"><tspan
+       sodipodi:linespacing="125%"
+       transform="scale(1.0417866,0.95988946)"><tspan
          sodipodi:role="line"
          id="tspan3302"
-         x="105.12231"
-         y="113.16536"
-         style="font-size:9px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;text-anchor:middle;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans">Мастерская-клуб, где энтузиасты </tspan><tspan
+         x="100.41009"
+         y="124.09975"
+         style="font-size:8.06297874px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;text-anchor:middle;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans">Мастерская-клуб, где энтузиасты </tspan><tspan
          sodipodi:role="line"
-         x="105.12231"
-         y="124.41536"
-         style="font-size:9px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;text-anchor:middle;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans"
+         x="100.41009"
+         y="134.17848"
+         style="font-size:8.06297874px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;text-anchor:middle;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans"
          id="tspan3304">могут заниматься любимым делом, </tspan><tspan
          sodipodi:role="line"
-         x="105.12231"
-         y="135.66536"
-         style="font-size:9px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;text-anchor:middle;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans"
+         x="100.41009"
+         y="144.2572"
+         style="font-size:8.06297874px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;text-anchor:middle;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans"
          id="tspan3306">будь то радиолюбительство, </tspan><tspan
          sodipodi:role="line"
-         x="105.12231"
-         y="146.91536"
-         style="font-size:9px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;text-anchor:middle;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans"
+         x="100.41009"
+         y="154.33592"
+         style="font-size:8.06297874px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;text-anchor:middle;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans"
          id="tspan3308">конструирование, программирование, </tspan><tspan
          sodipodi:role="line"
-         x="105.12231"
-         y="158.16536"
-         style="font-size:9px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;text-anchor:middle;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans"
+         x="100.41009"
+         y="164.41464"
+         style="font-size:8.06297874px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;text-anchor:middle;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans"
          id="tspan3316">моделирование или даже </tspan><tspan
          sodipodi:role="line"
-         x="105.12231"
-         y="169.41536"
-         style="font-size:9px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;text-anchor:middle;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans"
+         x="100.41009"
+         y="174.49338"
+         style="font-size:8.06297874px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;text-anchor:middle;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans"
          id="tspan3318">художественное творчество. </tspan></text>
     <text
        xml:space="preserve"
@@ -1649,16 +1666,18 @@
   <g
      inkscape:groupmode="layer"
      id="layer3"
-     inkscape:label="Layer#1" />
+     inkscape:label="Layer#1"
+     transform="translate(17.718821,-7.0924158)" />
   <g
      inkscape:groupmode="layer"
      id="layer2"
-     inkscape:label="Layer">
+     inkscape:label="Layer"
+     transform="translate(17.718821,-7.0924158)">
     <flowRoot
        xml:space="preserve"
        id="flowRoot3016"
        style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#2c7a54;fill-opacity:1;stroke:#000000;stroke-width:0.35433072;stroke-miterlimit:0.69999999;stroke-opacity:1;stroke-dasharray:none;font-family:DejaVu Sans Mono;-inkscape-font-specification:DejaVu Sans Mono"
-       transform="translate(-43.845039,50.016433)"><flowRegion
+       transform="matrix(0.93332265,0,0,0.85995211,-53.428714,66.316993)"><flowRegion
          id="flowRegion3018"><rect
            id="rect3020"
            width="294.25937"
@@ -1672,7 +1691,7 @@
          id="flowPara6551">технического творчества</flowPara></flowRoot>    <flowRoot
        xml:space="preserve"
        id="flowRoot3371"
-       style="fill:black;stroke:none;stroke-opacity:1;stroke-width:1px;stroke-linejoin:miter;stroke-linecap:butt;fill-opacity:1;font-family:Sans;font-style:normal;font-weight:normal;font-size:16px;line-height:125%;letter-spacing:0px;word-spacing:0px"><flowRegion
+       style="font-size:16px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"><flowRegion
          id="flowRegion3373"><rect
            id="rect3375"
            width="71"
@@ -1680,67 +1699,8 @@
            x="675"
            y="171.16536" /></flowRegion><flowPara
          id="flowPara3377" /></flowRoot>    <g
-       id="g4107"
-       transform="translate(-147.5,18.5)"
-       clip-path="url(#clipPath4149)">
-      <path
-         id="path3381"
-         d="m 432.46889,-12.832946 -20.33846,21.655334 9.01696,7.974431 -20.21042,21.509015 6.16372,5.450414 -20.21043,21.509015 8.30365,7.352571 -20.30187,21.618755 7.91956,7.023351 -20.06411,21.3627 9.01696,7.97443 -20.21043,21.50901 12.72983,11.26663 20.19213,-20.48478 -10.00461,-9.89488 1.00594,0.89621 20.19214,-20.48477 -8.0293,-7.91956 20.17385,-20.46649 -11.94336,-11.815326 3.74945,3.328776 20.19213,-20.484776 -10.02291,-9.913169 3.87748,3.438516 20.19214,-20.484776 -10.00462,-9.894879 1.00595,0.896209 20.19213,-20.484776 -12.5835,-12.437185 z"
-         style="fill:none;stroke:#000000;stroke-width:0.58527935px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         inkscape:connector-curvature="0" />
-      <path
-         inkscape:connector-curvature="0"
-         id="path3486"
-         d="m 356.82154,158.84213 15.21726,10.82766 -23.99645,49.01715 -7.46231,-3.36536 19.89949,-41.70115 -8.63287,-5.99911 z"
-         style="fill:none;stroke:#000000;stroke-width:0.58527935px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
-      <path
-         inkscape:connector-curvature="0"
-         id="path3555"
-         d="m 486.48217,-44.30843 -0.0979,0.20721 -153.93308,304.92333 -0.1151,0.22652 0.19107,0.13548 11.28241,8.46898 0.2694,0.22253 0.16458,-0.321 158.68954,-308.51541 0.16564,-0.30274 -0.33608,-0.10875 -16.03888,-4.87689 -0.24161,-0.0593 z m 0.29696,0.69728 15.46012,4.69062 -158.35826,307.90993 -10.80368,-8.11202 153.70182,-304.48853 z"
-         style="font-size:medium;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-indent:0;text-align:start;text-decoration:none;line-height:normal;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;text-anchor:start;baseline-shift:baseline;color:#000000;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Sans;-inkscape-font-specification:Sans" />
-      <text
-         inkscape:transform-center-y="-15"
-         inkscape:transform-center-x="-9"
-         transform="matrix(0.45355792,-0.8912268,0.8912268,0.45355792,0,0)"
-         sodipodi:linespacing="125%"
-         id="text3557"
-         y="423.92484"
-         x="93.160591"
-         style="font-size:9.36446953px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
-         xml:space="preserve"><tspan
-           style="font-weight:bold;-inkscape-font-specification:Sans Bold"
-           y="423.92484"
-           x="93.160591"
-           id="tspan3559"
-           sodipodi:role="line">ул. Леонида Беды</tspan></text>
-      <flowRoot
-         transform="matrix(0.58527932,0,0,0.58527932,92.961851,-252.645)"
-         style="font-size:16px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
-         id="flowRoot3561"
-         xml:space="preserve"><flowRegion
-           id="flowRegion3563"><rect
-             y="570.31671"
-             x="493.56052"
-             height="45.961933"
-             width="68.58934"
-             id="rect3565" /></flowRegion><flowPara
-           style="font-size:20px;font-weight:bold;-inkscape-font-specification:Sans Bold"
-           id="flowPara3567">45</flowPara></flowRoot>      <text
-         sodipodi:linespacing="125%"
-         id="text3569"
-         y="124.91295"
-         x="374.63324"
-         style="font-size:9.36446952999999915px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;stroke-opacity:0"
-         xml:space="preserve"><tspan
-           style="font-size:12px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.35433071999999999;stroke-miterlimit:4;stroke-opacity:0;stroke-dasharray:none;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans Bold"
-           y="124.91295"
-           x="374.63324"
-           id="tspan3571"
-           sodipodi:role="line">Белчип</tspan></text>
-    </g>
-    <g
        id="g4153"
-       transform="translate(-27.999999,1.9999999)">
+       transform="matrix(0.93332265,0,0,0.85995211,-27.640181,26.025158)">
       <text
          sodipodi:linespacing="100%"
          id="text3040"
@@ -1920,38 +1880,97 @@
       </g>
     </g>
     <g
-       id="g4095"
-       transform="matrix(0.75996644,0,0,0.75996644,94.061241,102.67687)">
+       id="g3282"
+       clip-path="url(#clipPath3448)">
+      <path
+         id="path3381"
+         d="m 265.96078,29.67865 -18.98234,18.62255 8.41573,6.857629 -18.86284,18.496723 5.75273,4.687095 -18.86285,18.496723 7.74999,6.32286 -18.9482,18.59109 7.39151,6.03975 -18.72629,18.3709 8.41573,6.85762 -18.86285,18.49672 11.88104,9.68877 18.84577,-17.61593 -9.33753,-8.50913 0.93887,0.7707 18.84578,-17.61592 -7.49393,-6.81044 18.82871,-17.6002 -11.14701,-10.16062 3.49945,2.86259 18.84577,-17.615927 -9.35461,-8.524851 3.61894,2.956959 18.84579,-17.615926 -9.33754,-8.509122 0.93887,0.770697 18.84578,-17.615927 -11.74447,-10.695383 z"
+         style="fill:none;stroke:#000000;stroke-width:0.52434391px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         inkscape:connector-curvature="0" />
+      <path
+         inkscape:connector-curvature="0"
+         id="path3486"
+         d="m 195.3574,177.31099 14.20261,9.31127 -22.39643,42.1524 -6.96474,-2.89404 18.57264,-35.861 -8.05725,-5.15894 z"
+         style="fill:none;stroke:#000000;stroke-width:0.52434391px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      <path
+         inkscape:connector-curvature="0"
+         id="path3555"
+         d="M 316.3726,2.6112411 316.28123,2.7894318 172.612,265.00889 l -0.10743,0.1948 0.17833,0.11651 10.53013,7.28291 0.25144,0.19137 0.1536,-0.27605 148.10854,-265.3084746 0.1546,-0.2603419 -0.31367,-0.09352 -14.96945,-4.1938918 -0.2255,-0.050995 z m 0.27716,0.5996274 14.42928,4.0337086 L 183.27969,272.03237 173.19637,265.05642 316.64976,3.2108685 z"
+         style="font-size:medium;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-indent:0;text-align:start;text-decoration:none;line-height:normal;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;text-anchor:start;baseline-shift:baseline;color:#000000;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Sans;-inkscape-font-specification:Sans" />
+      <text
+         inkscape:transform-center-y="-15"
+         inkscape:transform-center-x="-9"
+         transform="matrix(0.47251057,-0.85547923,0.92846814,0.43536547,0,0)"
+         sodipodi:linespacing="125%"
+         id="text3557"
+         y="281.25082"
+         x="-14.278406"
+         style="font-size:8.38950253px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         xml:space="preserve"><tspan
+           style="font-weight:bold;-inkscape-font-specification:Sans Bold"
+           y="281.25082"
+           x="-14.278406"
+           id="tspan3559"
+           sodipodi:role="line">ул. Леонида Беды</tspan></text>
+      <flowRoot
+         transform="matrix(0.54625445,0,0,0.50331219,-50.908829,-176.54823)"
+         style="font-size:16px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         id="flowRoot3561"
+         xml:space="preserve"><flowRegion
+           id="flowRegion3563"><rect
+             y="570.31671"
+             x="493.56052"
+             height="45.961933"
+             width="68.58934"
+             id="rect3565" /></flowRegion><flowPara
+           style="font-size:20px;font-weight:bold;-inkscape-font-specification:Sans Bold"
+           id="flowPara3567">45</flowPara></flowRoot>      <text
+         transform="scale(1.0417866,0.95988948)"
+         sodipodi:linespacing="125%"
+         id="text3569"
+         y="154.32352"
+         x="203.47878"
+         style="font-size:8.38950253px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         xml:space="preserve"><tspan
+           style="font-size:10.75063896px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans Bold"
+           y="154.32352"
+           x="203.47878"
+           id="tspan3571"
+           sodipodi:role="line">Белчип</tspan></text>
       <g
-         transform="translate(-19.622212,-62.048617)"
-         id="g4087">
+         transform="matrix(0.70929393,0,0,0.65353475,87.782343,113.10245)"
+         id="g4095">
+        <g
+           id="g4087"
+           transform="translate(-19.622212,-62.048617)">
+          <path
+             transform="matrix(1.0714432,0,0,1.0714432,-15.47641,-3.806862)"
+             d="m 227.49998,27.915367 c 0,4.556349 -3.69365,8.25 -8.25,8.25 -4.55634,0 -8.25,-3.693651 -8.25,-8.25 0,-4.556349 3.69366,-8.25 8.25,-8.25 4.55635,0 8.25,3.693651 8.25,8.25 z"
+             sodipodi:ry="8.25"
+             sodipodi:rx="8.25"
+             sodipodi:cy="27.915367"
+             sodipodi:cx="219.24998"
+             id="path4069"
+             style="fill:#ff0000;fill-opacity:1;fill-rule:nonzero;stroke:#ff0000;stroke-width:2.74606299;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+             sodipodi:type="arc" />
+          <path
+             inkscape:connector-curvature="0"
+             id="path4071"
+             d="m 357.98749,11.777863 7.68435,21.525007 9.96565,-21.153886 z"
+             style="fill:#ff0000;stroke:#ff0000;stroke-width:0.9749915px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+             transform="translate(-147.5,18.5)" />
+        </g>
         <path
            sodipodi:type="arc"
-           style="fill:#ff0000;fill-opacity:1;fill-rule:nonzero;stroke:#ff0000;stroke-width:2.74606299;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-           id="path4069"
-           sodipodi:cx="219.24998"
-           sodipodi:cy="27.915367"
-           sodipodi:rx="8.25"
-           sodipodi:ry="8.25"
-           d="m 227.49998,27.915367 c 0,4.556349 -3.69365,8.25 -8.25,8.25 -4.55634,0 -8.25,-3.693651 -8.25,-8.25 0,-4.556349 3.69366,-8.25 8.25,-8.25 4.55635,0 8.25,3.693651 8.25,8.25 z"
-           transform="matrix(1.0714432,0,0,1.0714432,-15.47641,-3.806862)" />
-        <path
-           transform="translate(-147.5,18.5)"
-           style="fill:#ff0000;stroke:#ff0000;stroke-width:0.9749915px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-           d="m 357.98749,11.777863 7.68435,21.525007 9.96565,-21.153886 z"
-           id="path4071"
-           inkscape:connector-curvature="0" />
+           style="fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:2.74606299;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+           id="path4077"
+           sodipodi:cx="202.36511"
+           sodipodi:cy="21.646069"
+           sodipodi:rx="3.4913394"
+           sodipodi:ry="3.4913394"
+           d="m 205.85645,21.646069 c 0,1.928213 -1.56312,3.491339 -3.49134,3.491339 -1.92821,0 -3.49134,-1.563126 -3.49134,-3.491339 0,-1.928214 1.56313,-3.49134 3.49134,-3.49134 1.92822,0 3.49134,1.563126 3.49134,3.49134 z"
+           transform="matrix(0.75194083,0,0,0.70776701,47.458482,-51.811284)" />
       </g>
-      <path
-         transform="matrix(0.75194083,0,0,0.70776701,47.458482,-51.811284)"
-         d="m 205.85645,21.646069 c 0,1.928213 -1.56312,3.491339 -3.49134,3.491339 -1.92821,0 -3.49134,-1.563126 -3.49134,-3.491339 0,-1.928214 1.56313,-3.49134 3.49134,-3.49134 1.92822,0 3.49134,1.563126 3.49134,3.49134 z"
-         sodipodi:ry="3.4913394"
-         sodipodi:rx="3.4913394"
-         sodipodi:cy="21.646069"
-         sodipodi:cx="202.36511"
-         id="path4077"
-         style="fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:2.74606299;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-         sodipodi:type="arc" />
     </g>
   </g>
 </svg>
