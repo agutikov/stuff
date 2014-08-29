@@ -109,8 +109,6 @@
 		кто сколько когда сдал в какой валюте
 		кто сколько когда сдал в переводе на конкретную валюту (для отчётов например)
 		и т.д.
-		
-	TODO: как реализовать необязательные расходные статьи
 
 '''
 
@@ -257,14 +255,16 @@ if current_schema_revision == 2:
 
 		Column('currency_code_num_3', String(3), nullable=False, unique=True),
 		Column('currency_code_ascii_3', String(3), nullable=False, unique=True),
-		Column('currency_exponent', Integer, nullable=False)
+		Column('currency_exponent', Integer)
 	)
+	currency.create()
 
-	period_units = Table('perid_units', meta,
+	period_units = Table('period_units', meta,
 		Column('id', Integer, primary_key=True),
 
 		Column('name', String, nullable=False, unique=True)
 	)
+	period_units.create()
 
 	regular_fixed_payment_periods = Table('regular_fixed_payment_periods', meta,
 		Column('id', Integer, primary_key=True),
@@ -278,9 +278,10 @@ if current_schema_revision == 2:
 		Column('period_unit_id', Integer, ForeignKey('period_units.id')),
 		Column('duration', Integer, nullable=False)
 	)
+	regular_fixed_payment_periods.create()
 
 	payments = Table('payments', meta,
-		Column('id', Integer, primary_key=True)
+		Column('id', Integer, primary_key=True),
 
 		Column('title', String, nullable=False, unique=True),
 		Column('comments', String),
@@ -290,6 +291,7 @@ if current_schema_revision == 2:
 		Column('currency_id', Integer, ForeignKey('currency.id')),
 		Column('approx_amount', Integer, nullable=False)
 	)
+	payments.create()
 
 	events = Table('events', meta,
 		Column('id', Integer, primary_key=True),
@@ -319,6 +321,7 @@ if current_schema_revision == 2:
 		Column('exchange_course_exponent', Integer, nullable=False),
 		Column('exchange_location', String)
 	)
+	events.create()
 
 	money_chunks = Table('money_chunks', meta,
 		Column('id', Integer, primary_key=True),
@@ -331,20 +334,66 @@ if current_schema_revision == 2:
 		Column('src_event_id', Integer, ForeignKey('events.id'), nullable=True),
 		Column('dst_event_id', Integer, ForeignKey('events.id'), nullable=True)
 	)
+	money_chunks.create()
+
+	metadata_revisions = Table('metadata_revisions', meta,
+		Column('update_to_version', Integer, primary_key=True),
+		Column('timestamp', DateTime, default=datetime.now),
+		Column('comment', String, nullable=False)
+	)
+	metadata_revisions.create()
+	i = metadata_revisions.insert()
+	i.execute(comment='initial')
 
 	schema_timestamp(schema_version_comment)
 else:
 	currency = Table('currency', meta, autoload=True)
+	period_units = Table('period_units', meta, autoload=True)
+	regular_fixed_payment_periods = Table('regular_fixed_payment_periods', meta, autoload=True)
+	payments = Table('payments', meta, autoload=True)
+	events = Table('events', meta, autoload=True)
+	money_chunks = Table('money_chunks', meta, autoload=True)
+	metadata_revisions = Table('metadata_revisions', meta, autoload=True)
 
 
+s = metadata_revisions.select()
+rs = s.execute()
+current_metadata_revision = max(map(lambda r: r.update_to_version, rs))
+
+print("current_metadata_revision:", current_metadata_revision)
+
+def metadata_timestamp(comment):
+	global current_metadata_revision
+	i = metadata_revisions.insert()
+	i.execute(comment=comment)
+	current_metadata_revision += 1
 
 ################################# INSERT METADATA
+
+
+metadata_comment = "testing"
+print("Update to metadata rev. 2 '" + metadata_comment + "'")
 
 i = contact_types.insert()
 i.execute(name='email')
 i.execute({'name': 'skype'},
           {'name': 'jabber'},
           {'name': 'phone'})
+
+i = currency.insert()
+i.execute(name='Белорусский рубль', currency_code_num_3='974', currency_code_ascii_3='BYR', currency_exponent=0)
+i.execute(name='Доллар США', currency_code_num_3='840', currency_code_ascii_3='USD', currency_exponent=2)
+i.execute(name='Российский рубль', currency_code_num_3='643', currency_code_ascii_3='RUB', currency_exponent=2)
+i.execute(name='Евро', currency_code_num_3='978', currency_code_ascii_3='EUR', currency_exponent=2)
+
+i = period_units.insert()
+i.execute(name='день')
+i.execute(name='неделя')
+i.execute(name='месяц')
+i.execute(name='год')
+
+
+metadata_timestamp(metadata_comment)
 
 ################################# SELECT
 
