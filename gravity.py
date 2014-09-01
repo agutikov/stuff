@@ -8,7 +8,7 @@ import pygame
 from collections import namedtuple
 import math
 
-
+#TODO: path, manual scale, 3d, coordinate mesh legend, focus
 
 class Point:
 	x=0
