@@ -1,120 +1,5 @@
 #!/usr/bin/python
 
-
-
-
-
-'''
-
-	юзвери
-	у каждого юзверя есть интервалы времени когда он "учавствует" и когда нет - т.е. когда он должен сдавать и когда нет
-		это обобщение варианта когда записывается только дата вступления и выбытия из рядов
-	на каждом интервале юзверь может иметь разный размер "обещанного взноса" - т.е. суммы которую он подписался платить ежемесячно
-	никто ему не мешает взносить больше - тогда то что больше - можно раскидать на определённые месяцы или оставить за тот в который произведён взнос
-
-	таймлайн - квантование по дням
-	юзвери сдают деньги в какой-то день в какой-то валюте
-	они зачисляются на "личный счёт" но фактически являются уже общаком - и включаются в него при подсчётах
-
-	таким образом общак считается во всех валютах сразу
-
-	далее - за что-то надо платить
-	и тут появляются затратные статьи - такие как аренда, ремонт, и т.д.
-	среди них есть обязательные и необязательные
-	т.е. кто-то может подписаться или нет на необязательные
-	но! - оплата, в отличии от взносов, производится всегда в одной определённой валюте
-
-	далее в какой-то день может произойти обмен валют - тогда тот кто менял общаковые бабки вносит в историю запись о том где когда и сколько менял
-	если не вся определённая валюта обменяна - то считается что с каждого лчиного счёта снята пропорциональная сумма
-	и вот тогда надо чтобы можно было проследить с кого сколько взяли в какой валюте и на что поменяли
-
-	а потом поменянные деньги и непоменянные - оправляются на оплату чего-либо
-	и фактически фиксируются в виде оплаты
-
-	т.е. всегда можно проследить - сколько кто внёс, сколько из этого на что и когда поменяли и сколько на что и когда потратили
-
-	----
-
-	!!! важный технический момент
-
-	данные обрабатываются в sqlite с клиентом на питоне
-	хранятся в виде дампа в sql с контролем версий через git
-	интерфейс как у fdisk - консольный интерактивный (не коммандный для начала)
-
-	потом можно будет сделать сервак и клиент с коммандным интерфейсом
-	и все остальные свистелки типа curses, gui, webgui и т.д.
-
-
-
-
-
-
-	----
-
-	вариант со счетами и обезличенной валютой не прокатит - надо рисовать куски денег с собственной историей:
-	от кого когда поступили, когда дробились или объединялись, когда и на что менялись, когда и на что потратились
-	дробить и соединять можно куски денег только одной валюты
-	менять можно только разные валюты одну на другую - всегда определённые куски
-
-	первое что приходит в голову - тут обязательно понадобятся рациональные числа
-
-	юзверь:
-		интервалы
-		взносы
-	интервал: начало, конец, обещанная сумма
-	сумма: валюта, рациональная сумма
-	кусок денег: валюта, рациональная сумма, id
-	операции:
-		взнос - дата, юзер, кусок денег,
-		деление - начальный кусок денег - получившиеся куски,
-		слияние - начальные куски - получившийся новый кусок денег,
-		обмен - начальные кусок в одной валюте - итоговый в другой, плюс дата, место, курс и т.д.,
-		расход - кусок денег в одной валюте, дата, описание
-		составная операция - имеющая логический смысл оперция состоящая из нескольких атомарных например деление и слияний
-
-
-
-'''
-
-
-
-
-'''
-	параметры коммандной строки
-	конфиг
-
-	дальше находим репозитарий и вытаскиваем оттуда files.list
-	создаем базу sqlite в памяти и грузим туда файлы из списка по очереди
-	сначала файлик создающий таблицы, потом данные для каждой таблицы
-
-	база готова - выводим инфу и пошли в бесконечный цикл интерфейса
-
-	каждая команда реализована в отдельной функции
-	парсинг параметров общий
-	есть список функций с описанием, и метаданными о парамтерах
-	и мап имён комманд на описания функций
-	функции могут быть активными и неактивными в зависимости от того загружена база или нет
-	при первом запуске когда базы ещё нет выводится пояснение как её создать - специальной командой
-
-	после выполнения каждой изменяющей функции делается дамп базы вручную:
-	данные по каждой таблице в отдельном файле, создание таблиц отдельно, и список файлов
-	далее это кладется в гит и коммитится
-
-	изменяющие функции:
-		взнос
-		обмен
-		расход
-
-	неизменяющие:
-		кто сколько когда сдал в какой валюте
-		кто сколько когда сдал в переводе на конкретную валюту (для отчётов например)
-		и т.д.
-
-'''
-
-
-#!/usr/bin/python
-
 from datetime import datetime
 from pprint import pprint
 
@@ -160,29 +45,29 @@ meta = MetaData(engine)
 
 
 
-if engine.dialect.has_table(engine.connect(), "schema_version_control"):
+if engine.dialect.has_table(engine.connect(), "__schema_version_control"):
 	print("Database already have schema.")
-	schema_version_control = Table('schema_version_control', meta, autoload=True)
+	__schema_version_control = Table('__schema_version_control', meta, autoload=True)
 else:
 	print("Init new database.")
-	schema_version_control = Table('schema_version_control', meta,
+	__schema_version_control = Table('__schema_version_control', meta,
 		Column('update_to_version', Integer, primary_key=True),
 		Column('timestamp', DateTime, default=datetime.now),
 		Column('comment', String, nullable=False)
 	)
-	schema_version_control.create()
-	i = schema_version_control.insert()
+	__schema_version_control.create()
+	i = __schema_version_control.insert()
 	i.execute(comment='initial')
 
 
-s = schema_version_control.select()
+s = __schema_version_control.select()
 rs = s.execute()
 current_schema_revision = max(map(lambda r: r.update_to_version, rs))
 
 
 def schema_timestamp(comment):
 	global current_schema_revision
-	i = schema_version_control.insert()
+	i = __schema_version_control.insert()
 	i.execute(comment=comment)
 	current_schema_revision += 1
 
@@ -265,6 +150,21 @@ if current_schema_revision == 2:
 		Column('name', String, nullable=False, unique=True)
 	)
 	period_units.create()
+	
+	users_payment_obligations = Table('users_payment_obligations', meta,
+		Column('id', Integer, primary_key=True),
+				   
+		Column('user_id', Integer, ForeignKey('users.id'), nullable=False),
+		
+		Column('currency_id', Integer, ForeignKey('currency.id')),
+		Column('amount', Integer, nullable=False),
+		Column('period_unit_id', Integer, ForeignKey('period_units.id')),
+		Column('duration', Integer, nullable=False),
+		
+		Column('changed_timestamp', DateTime, default=datetime.now),
+		Column('start_date', DateTime),
+		Column('end_date', DateTime)
+	)
 
 	regular_fixed_payment_periods = Table('regular_fixed_payment_periods', meta,
 		Column('id', Integer, primary_key=True),
@@ -274,9 +174,11 @@ if current_schema_revision == 2:
 
 		Column('currency_id', Integer, ForeignKey('currency.id')),
 		Column('amount', Integer, nullable=False),
-
 		Column('period_unit_id', Integer, ForeignKey('period_units.id')),
-		Column('duration', Integer, nullable=False)
+		Column('duration', Integer, nullable=False),
+		
+		Column('start_date', DateTime),
+		Column('end_date', DateTime, nullable=True)
 	)
 	regular_fixed_payment_periods.create()
 
@@ -308,18 +210,18 @@ if current_schema_revision == 2:
 		Column('type', Integer, nullable=False),
 
 		Column('title', String),
-		Column('comments', String),
+		Column('comments', String, nullable=True),
 
 		Column('parent_event_id', Integer, ForeignKey('events.id'), nullable=True),
 
-		Column('src_user_id', Integer, ForeignKey('users.id'), nullable=False),
-		Column('dst_payment_id', Integer, ForeignKey('payments.id'), nullable=False),
+		Column('src_user_id', Integer, ForeignKey('users.id'), nullable=True),
+		Column('dst_payment_id', Integer, ForeignKey('payments.id'), nullable=True),
 
-		Column('exchange_src_currency_id', Integer, ForeignKey('currency.id')),
-		Column('exchange_dst_currency_id', Integer, ForeignKey('currency.id')),
-		Column('exchange_course', Integer, nullable=False),
-		Column('exchange_course_exponent', Integer, nullable=False),
-		Column('exchange_location', String)
+		Column('exchange_src_currency_id', Integer, ForeignKey('currency.id'),  nullable=True),
+		Column('exchange_dst_currency_id', Integer, ForeignKey('currency.id'),  nullable=True),
+		Column('exchange_course', Integer, nullable=True),
+		Column('exchange_course_exponent', Integer,  nullable=True),
+		Column('exchange_location', String, nullable=True)
 	)
 	events.create()
 
@@ -336,13 +238,13 @@ if current_schema_revision == 2:
 	)
 	money_chunks.create()
 
-	metadata_revisions = Table('metadata_revisions', meta,
+	__metadata_revisions = Table('__metadata_revisions', meta,
 		Column('update_to_version', Integer, primary_key=True),
 		Column('timestamp', DateTime, default=datetime.now),
 		Column('comment', String, nullable=False)
 	)
-	metadata_revisions.create()
-	i = metadata_revisions.insert()
+	__metadata_revisions.create()
+	i = __metadata_revisions.insert()
 	i.execute(comment='initial')
 
 	schema_timestamp(schema_version_comment)
@@ -350,13 +252,14 @@ else:
 	currency = Table('currency', meta, autoload=True)
 	period_units = Table('period_units', meta, autoload=True)
 	regular_fixed_payment_periods = Table('regular_fixed_payment_periods', meta, autoload=True)
+	users_payment_obligations = Table('users_payment_obligations', meta, autoload=True)
 	payments = Table('payments', meta, autoload=True)
 	events = Table('events', meta, autoload=True)
 	money_chunks = Table('money_chunks', meta, autoload=True)
-	metadata_revisions = Table('metadata_revisions', meta, autoload=True)
+	__metadata_revisions = Table('__metadata_revisions', meta, autoload=True)
 
 
-s = metadata_revisions.select()
+s = __metadata_revisions.select()
 rs = s.execute()
 current_metadata_revision = max(map(lambda r: r.update_to_version, rs))
 
@@ -364,44 +267,36 @@ print("current_metadata_revision:", current_metadata_revision)
 
 def metadata_timestamp(comment):
 	global current_metadata_revision
-	i = metadata_revisions.insert()
+	i = __metadata_revisions.insert()
 	i.execute(comment=comment)
 	current_metadata_revision += 1
 
 ################################# INSERT METADATA
 
+if current_metadata_revision == 1:
+	metadata_comment = "testing"
+	print("Update to metadata rev. 2 '" + metadata_comment + "'")
 
-metadata_comment = "testing"
-print("Update to metadata rev. 2 '" + metadata_comment + "'")
+	i = contact_types.insert()
+	i.execute(name='email')
+	i.execute({'name': 'skype'},
+		{'name': 'jabber'},
+		{'name': 'phone'})
 
-i = contact_types.insert()
-i.execute(name='email')
-i.execute({'name': 'skype'},
-          {'name': 'jabber'},
-          {'name': 'phone'})
+	i = currency.insert()
+	i.execute(name='Белорусский рубль', currency_code_num_3='974', currency_code_ascii_3='BYR', currency_exponent=0)
+	i.execute(name='Доллар США', currency_code_num_3='840', currency_code_ascii_3='USD', currency_exponent=2)
+	i.execute(name='Российский рубль', currency_code_num_3='643', currency_code_ascii_3='RUB', currency_exponent=2)
+	i.execute(name='Евро', currency_code_num_3='978', currency_code_ascii_3='EUR', currency_exponent=2)
 
-i = currency.insert()
-i.execute(name='Белорусский рубль', currency_code_num_3='974', currency_code_ascii_3='BYR', currency_exponent=0)
-i.execute(name='Доллар США', currency_code_num_3='840', currency_code_ascii_3='USD', currency_exponent=2)
-i.execute(name='Российский рубль', currency_code_num_3='643', currency_code_ascii_3='RUB', currency_exponent=2)
-i.execute(name='Евро', currency_code_num_3='978', currency_code_ascii_3='EUR', currency_exponent=2)
+	i = period_units.insert()
+	i.execute(name='день')
+	i.execute(name='неделя')
+	i.execute(name='месяц')
+	i.execute(name='год')
 
-i = period_units.insert()
-i.execute(name='день')
-i.execute(name='неделя')
-i.execute(name='месяц')
-i.execute(name='год')
+	metadata_timestamp(metadata_comment)
 
-
-metadata_timestamp(metadata_comment)
-
-################################# SELECT
-
-s = contact_types.select()
-rs = s.execute()
-
-for row in rs:
-	print(row.id, row.name)
 
 ################################# OBJECTS MAPPING, SESSIONS AND RELATIONS
 
@@ -443,8 +338,67 @@ user_mapper = mapper(User, users,
 			properties={'contacts': relation(contact_mapper)}
 		)
 
+class Currency(object):
+	def __init__(self, name=None, currency_code_num_3=None, currency_code_ascii_3=None, currency_exponent=0):
+		self.name = name
+		self.currency_code_num_3 = currency_code_num_3
+		self.currency_code_ascii_3 = currency_code_ascii_3
+		self.currency_exponent = currency_exponent
+	def __repr__(self):
+		return self.currency_code_ascii_3
+	def f_val(value):
+		return value / (10**self.currency_exponent)
+	def s_val(value):
+		return ("%."+("%d" % self.currency_exponent)+"f") % self.f_val(value) + " " + self.currency_code_ascii_3
+ 
+class PeriodUnit(object):
+	def __init__(self, name=None):
+		self.name = name
+	def __repr__(self):
+		return self.name
+	
+class UserPaymentObligation(object):
+	def __init__(self, user, currency=None, amount=0, period_unit=None, duration=0, start_date=None, end_date=None):
+		self.user = user
+		self.currency = currency if currency else session.query(Currency).filter_by(currency_code_ascii_3='BYR').first()
+		self.amount = amount
+		self.period_unit = period_unit if period_unit else session.query(PeriodUnit).filter_by(name='месяц').first()
+		self.duration = duration
+		self.start_date = start_date if start_from else datetime.now
+		self.end_date = end_date
+	def __repr__(self):
+		return self.currency.s_val(self.amount) + " / " + self.duration + " " + self.period_unit + " from " + self.start_date + 
+			((" till " + self.end_date) if self.end_date else "")
+
+class RegularFixedPaymentPeriod(object):
+	def __init__(self, name=None):
+		self.name = name
+	def __repr__(self):
+		return self.name
+
+class Payment(object):
+	def __init__(self, name=None):
+		self.name = name
+	def __repr__(self):
+		return self.name
+
+class Event(object):
+	def __init__(self, name=None):
+		self.name = name
+	def __repr__(self):
+		return self.name
+
+class MoneyChunk(object):
+	def __init__(self, name=None):
+		self.name = name
+	def __repr__(self):
+		return self.name
 
 
+
+#TODO: отдельные файлы: подключение к базе и настройки, создание и модификация схемы, metadata, тесты схемы, классы, тесты классов, функции-запросы, тесты функций, сервер, тесты сервера
+
+################################# TESTING
 
 session = create_session()
 
@@ -472,10 +426,13 @@ for user in all_users:
 		print('    ', contact.type, ":", contact)
 
 
+all_contacts = session.query(Contact)
+for c in all_contacts:
+	session.delete(c)
 
-
-
-
+all_users = session.query(User)
+for u in all_users:
+	session.delete(u)
 
 
 
