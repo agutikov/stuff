@@ -1,0 +1,46 @@
+
+- model: finance.currency
+  fields:
+    name: 'Белорусский рубль'
+    code_num_3: 974
+    code_ascii_3: BYR
+    exponent: 0
+
+- model: finance.currency
+  fields:
+    name: 'Российский рубль'
+    code_num_3: 643
+    code_ascii_3: RUR
+    exponent: 2
+
+- model: finance.currency
+  fields:
+    name: 'Доллар США'
+    code_num_3: 840
+    code_ascii_3: USD
+    exponent: 2
+
+- model: finance.currency
+  fields:
+    name: 'Евро'
+    code_num_3: 978
+    code_ascii_3: EUR
+    exponent: 2
+
+
+- model: finance.period_unit
+  fields:
+    name: 'day'
+
+- model: finance.period_unit
+  fields:
+    name: 'week'
+
+- model: finance.period_unit
+  fields:
+    name: 'month'
+
+- model: finance.period_unit
+  fields:
+    name: 'year'
+
