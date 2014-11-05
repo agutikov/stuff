@@ -1,6 +1,5 @@
 from django.db import models
-from datetime import date
-from dateutil.relativedelta import relativedelta
+from datetime import date, timedelta
 
 
 def num_w_exp (value, exponent):
@@ -9,13 +8,49 @@ def num_w_exp (value, exponent):
 def num_str_exp (value, exponent):
 	return ("%."+("%d" % exponent)+"f") % num_w_exp(value, exponent)
 
+DAY = 'd'
+WEEK = 'w'
+MONTH = 'm'
+YEAR = 'y'
+
+PERIOD_UNIT_CHOICES = (
+	(DAY, 'day'),
+	(WEEK, 'week'),
+	(MONTH, 'month'),
+	(YEAR, 'year'),
+)
+
+
+BEFORE = 'b'
+AT = 'a'
+AFTER = 'f'
+
+UNTIL_CONDITION = (
+	(BEFORE, 'before'),  #   |  pay  |   use   |   -   |
+	(AT, 'at'),          #   |   -   | pay&use |   -   |
+	(AFTER, 'after'),    #   |   -   |   use   |  pay  |
+)
+
+"""
+	Expected task with time differencies:
+	count how many period units were elapsed
+	from some start time till some end time or now.
+"""
+def time_division (start, end, period):
+	return {
+		DAY: (end  - start) / timedelta(days=1),
+		WEEK: (end  - start) / timedelta(weeks=1),
+		MONTH: (end  - start) / timedelta(month=1),
+		YEAR: (end  - start) / timedelta(years=1)
+		} [period];
+
 
 
 class Subject(models.Model):
 	extern_id = models.CharField(max_length=256, null=False)
 	extern_type = models.IntegerField(null=False)
 
-	def __unicode__(self):
+	def __str__(self):
 		return ("%d " % self.extern_type) + self.extern_id
 
 	class Meta:
@@ -30,7 +65,7 @@ class Currency(models.Model):
 	code_ascii_3 = models.CharField(max_length=3, unique=True, null=False)
 	exponent = models.IntegerField(null=False)
 
-	def __unicode__(self):
+	def __str__(self):
 		return self.code_ascii_3
 
 	def f_val(self, value):
@@ -44,30 +79,6 @@ class Currency(models.Model):
 		verbose_name_plural = "currency"
 
 
-class Period_Unit(models.Model):
-	name = models.CharField(max_length=100, unique=True, null=False)
-
-	def __unicode__(self):
-		return self.name
-
-	class Meta:
-		verbose_name = "period unit"
-		verbose_name_plural = "period units"
-
-"""
-	В какую сторону округлять?
-	Может закодировать это как-то без использования таблицы?
-"""
-	def delta2units(self, datetime_from, datetime_to):
-		return {
-			"day" : delta / timedelta(days=1)
-			"week" : delta / timedelta(days=7)
-			"month" : delta.month()
-			"year" : delta.years()
-			}[self.name];
-
-
-
 #TODO: Amount: f_value + currency
 #TODO: Duration: t_value + period_unit
 
@@ -78,17 +89,17 @@ class Obligation_Period(models.Model):
 	comment = models.CharField(max_length=1000, null=True, blank=True)
 
 	# f_value of currancy in t_value of period_unit, for example: $10.00 in 10 days
-	currency = models.ForeignKey(Currency, null=False, blank=True)
+	currency = models.ForeignKey(Currency, null=False)
 	f_value = models.IntegerField(null=False) # f - financial
 
-	period_unit = models.ForeignKey(Period_Unit, null=False)
+	period_unit = models.CharField(max_length=1, choices=PERIOD_UNIT_CHOICES, null=False)
 	t_value = models.IntegerField(null=False) # t - time
 
 	start_date = models.DateField(null=False)
-	end_date = models.DateField(null=True, blank=True)
+	end_date = models.DateField(null=False)
 
-	def __unicode__(self):
-		return self.currency.s_val(self.f_value) + (" / %d" % self.t_value) + " " + str(self.period_unit) + " from " + self.start_date.strftime('%Y-%m-%d') + ((" till " + self.end_date.strftime('%Y-%m-%d')) if self.end_date else "")
+	def __str__(self):
+		return self.currency.s_val(self.f_value) + (" / %d" % self.t_value) + " " + self.get_period_unit_display() + " from " + self.start_date.strftime('%Y-%m-%d') + ((" till " + self.end_date.strftime('%Y-%m-%d')) if self.end_date else "")
 
 	class Meta:
 		verbose_name = "subject's obligation period"
@@ -99,7 +110,7 @@ class Sink(models.Model):
 	title = models.CharField(max_length=200, null=False)
 	comment = models.CharField(max_length=1000, null=True, blank=True)
 
-	def __unicode__(self):
+	def __str__(self):
 		return self.title
 
 	class Meta:
@@ -115,15 +126,19 @@ class Sink_Period(models.Model):
 	currency = models.ForeignKey(Currency, null=False)
 	f_value = models.IntegerField(null=False)
 
-	period_unit = models.ForeignKey(Period_Unit, null=True, blank=True)
+	period_unit = models.CharField(max_length=1, choices=PERIOD_UNIT_CHOICES, null=False)
 	t_value = models.IntegerField(null=False)
+	until_day = models.IntegerField(null=False)
+	until_day_condition = models.CharField(max_length=1, choices=UNTIL_CONDITION, null=False)
+	# each t_value of period_unit until until_day before|after paying period
+	# example: each month until 25-th day before paying period
 
 	start_date = models.DateField(null=False)
-	end_date = models.DateField(null=True, blank=True)
+	end_date = models.DateField(null=False)
 
-	def __unicode__ (self):
+	def __str__ (self):
 		if self.t_value != 0:
-			return self.currency.s_val(self.f_value) + (" / %d" % self.t_value) + " " + str(self.period_unit) + " from " + self.start_date.strftime('%Y-%m-%d') + ((" till " + self.end_date.strftime('%Y-%m-%d')) if self.end_date else "")
+			return self.currency.s_val(self.f_value) + (" / %d" % self.t_value) + " " + self.get_period_unit_display() + " from " + self.start_date.strftime('%Y-%m-%d') + ((" till " + self.end_date.strftime('%Y-%m-%d')) if self.end_date else "")
 		else:
 			return self.currency.s_val(self.f_value) + " till " + self.end_date.strftime('%Y-%m-%d')
 
@@ -139,7 +154,7 @@ class Exchange_Event_Data(models.Model):
 	exch_rate_exponent = models.IntegerField(null=False)
 	comment = models.CharField(max_length=1000, null=True, blank=True)
 
-	def __unicode__(self):
+	def __str__(self):
 		return self.src_currency + "/" + self.dst_currency + " " + num_str_exp(self.exch_rate, self.exch_rate_exponent)
 
 	class Meta:
@@ -149,6 +164,7 @@ class Exchange_Event_Data(models.Model):
 
 class Event(models.Model):
 	commit_timestamp = models.DateTimeField(null=False)
+
 	event_timestamp = models.DateField(null=False)
 
 	# 0 - complex event (sequence of events) - several events has it's id as parent
@@ -190,7 +206,7 @@ class Event(models.Model):
 	dst = models.ForeignKey(Sink, null=True, related_name='dst_events', blank=True)
 	exchange_event_data = models.ForeignKey(Exchange_Event_Data, null=True, related_name='exch_events', blank=True)
 
-	def __unicode__(self):
+	def __str__(self):
 		return self.type_name() + " " + self.event_timestamp + {
 			0 : "",
 			1 : " " + self.src,
@@ -213,7 +229,7 @@ class Money_Chunk(models.Model):
 	# if dst_event==None then money chunk is alive
 	dst_event = models.ForeignKey(Event, null=True, related_name='deleted_money_chunks', blank=True)
 
-	def __unicode__(self):
+	def __str__(self):
 		return self.currency.s_val(self.f_value) + ("alive" if dst_event == None else "")
 
 	class Meta:

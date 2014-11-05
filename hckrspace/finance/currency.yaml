@@ -26,21 +26,3 @@
     code_num_3: 978
     code_ascii_3: EUR
     exponent: 2
-
-
-- model: finance.period_unit
-  fields:
-    name: 'day'
-
-- model: finance.period_unit
-  fields:
-    name: 'week'
-
-- model: finance.period_unit
-  fields:
-    name: 'month'
-
-- model: finance.period_unit
-  fields:
-    name: 'year'
-
