@@ -1,6 +1,7 @@
 from django.db import models
 from datetime import date, timedelta
-
+from dateutil.relativedelta import relativedelta
+import calendar
 
 def num_w_exp (value, exponent):
 	return value / (10**exponent)
@@ -31,19 +32,53 @@ UNTIL_CONDITION = (
 	(AFTER, 'after'),    #   |   -   |   use   |  pay  |
 )
 
+# end - start in month
+def diff_month(end, start):
+	sign = 1
+	if end < start:
+		sign = -1
+		tmp = start
+		start = end
+		end = tmp
+	difference = 0.0
+	difference += (end.year - start.year) * 12 + end.month - start.month
+	start_days = calendar.monthrange(start.year, start.month)[1]
+	end_days = calendar.monthrange(end.year, end.month)[1]
+	difference += (start_days - start.day) / start_days
+	difference += end.day / end_days
+	return difference*sign
+
+
+
 """
 	Expected task with time differencies:
 	count how many period units were elapsed
 	from some start time till some end time or now.
 """
-def time_division (start, end, period):
-	return {
-		DAY: (end  - start) / timedelta(days=1),
-		WEEK: (end  - start) / timedelta(weeks=1),
-		MONTH: (end  - start) / timedelta(month=1),
-		YEAR: (end  - start) / timedelta(years=1)
-		} [period];
+def time_division (start, end, period_unit, t_value):
+	if t_value > 0 and period_unit in (DAY, WEEK, MONTH, YEAR):
+		return {
+			DAY: (end - start) / timedelta(days=t_value),
+			WEEK: (end - start) / timedelta(weeks=t_value),
+			MONTH: diff_month(end, start),
+			YEAR: (end - start) / timedelta(days=365.2425*t_value)
+			} [period_unit];
+	else:
+		return 0
 
+"""
+	import django
+	from django.utils import timezone
+	from datetime import date, timedelta
+
+	from finance.models import *
+
+	today = date.today()
+
+	obl = Obligation_Period.objects.filter(subject=Subject.objects.filter(extern_id='xxxxxxxxxxxxxx').first()).first()
+
+	time_division(obl.start_date, today, DAY, 1)
+"""
 
 
 class Subject(models.Model):
