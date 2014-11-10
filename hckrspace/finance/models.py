@@ -1,5 +1,5 @@
 from django.db import models
-from datetime import date, timedelta
+from datetime import datetime, date, timedelta
 from dateutil.relativedelta import relativedelta
 import calendar
 
@@ -30,6 +30,23 @@ UNTIL_CONDITION = (
 	(BEFORE, 'before'),  #   |  pay  |   use   |   -   |
 	(AT, 'at'),          #   |   -   | pay&use |   -   |
 	(AFTER, 'after'),    #   |   -   |   use   |  pay  |
+)
+
+
+COMPLEX = 'c' # complex event (sequence of events) - several events has it's id as parent
+INCOME = 'i' # income (subject deposit) - src not Null
+PAYMENT = 'p' # payment - dst not Null
+SLICE = 's' # slice - utility event, delete one and create 2 or more chunks
+MERGE = 'm' # merge - utility event, delete 2 or more and create 1 chunk
+EXCHANGE = 'e' # exchange - exchange_event_data not Null
+
+EVENT_TYPE_CHOICES = (
+	(COMPLEX, 'complex'),
+	(INCOME, 'income'),
+	(PAYMENT, 'payment'),
+	(SLICE, 'slice'),
+	(MERGE, 'merge'),
+	(EXCHANGE, 'exchange'),
 )
 
 # end - start in month
@@ -65,20 +82,6 @@ def time_division (start, end, period_unit, t_value):
 			} [period_unit];
 	else:
 		return 0
-
-"""
-	import django
-	from django.utils import timezone
-	from datetime import date, timedelta
-
-	from finance.models import *
-
-	today = date.today()
-
-	obl = Obligation_Period.objects.filter(subject=Subject.objects.filter(extern_id='xxxxxxxxxxxxxx').first()).first()
-
-	time_division(obl.start_date, today, DAY, 1)
-"""
 
 
 class Subject(models.Model):
@@ -130,7 +133,7 @@ class Obligation_Period(models.Model):
 	period_unit = models.CharField(max_length=1, choices=PERIOD_UNIT_CHOICES, null=False)
 	t_value = models.IntegerField(null=False) # t - time
 
-	start_date = models.DateField(null=False)
+	start_date = models.DateField(null=False, default=date.today())
 	end_date = models.DateField(null=False)
 
 	def __str__(self):
@@ -168,7 +171,7 @@ class Sink_Period(models.Model):
 	# each t_value of period_unit until until_day before|after paying period
 	# example: each month until 25-th day before paying period
 
-	start_date = models.DateField(null=False)
+	start_date = models.DateField(null=False, default=date.today())
 	end_date = models.DateField(null=False)
 
 	def __str__ (self):
@@ -182,56 +185,13 @@ class Sink_Period(models.Model):
 		verbose_name_plural = "payment sink periods"
 
 
-class Exchange_Event_Data(models.Model):
-	src_currency = models.ForeignKey(Currency, null=False, related_name='exchange_src_event_data_set')
-	dst_currency = models.ForeignKey(Currency, null=False, related_name='exchange_dst_event_data_set')
-	exch_rate = models.IntegerField(null=False)
-	exch_rate_exponent = models.IntegerField(null=False)
-	comment = models.CharField(max_length=1000, null=True, blank=True)
-
-	def __str__(self):
-		return self.src_currency + "/" + self.dst_currency + " " + num_str_exp(self.exch_rate, self.exch_rate_exponent)
-
-	class Meta:
-		verbose_name = "exchange event data"
-		verbose_name_plural = "exchange event data"
-
 
 class Event(models.Model):
-	commit_timestamp = models.DateTimeField(null=False)
+	commit_timestamp = models.DateTimeField(blank=True, null=False, default=datetime.now())
 
-	event_timestamp = models.DateField(null=False)
+	event_timestamp = models.DateField(null=False, default=date.today())
 
-	# 0 - complex event (sequence of events) - several events has it's id as parent
-	# 1 - income (subject deposit) - src not Null
-	# 2 - payment - dst not Null
-	# 3 - slice - utility event, delete one and create 2 or more chunks
-	# 4 - merge - utility event, delete 2 or more and create 1 chunk
-	# 5 - exchange - exchange_event_data not Null
-	type_id = models.IntegerField(null=False)
-
-	def type_str (type_num):
-		return {
-			0 : "complex",
-			1 : "income",
-			2 : "payment",
-			3 : "slice",
-			4 : "merge",
-			5 : "exchange"
-			}[type_num];
-
-	def type_id (type_str):
-		return {
-			"complex" : 0,
-			"income" : 1,
-			"payment" : 2,
-			"slice" : 3,
-			"merge" : 4,
-			"exchange" : 5
-			}[type_str];
-
-	def type_name (self):
-		return type_str(self.type_id)
+	event_type = models.CharField(max_length=1, choices=EVENT_TYPE_CHOICES, null=False)
 
 	comment = models.CharField(max_length=1000, null=True, blank=True)
 
@@ -239,21 +199,37 @@ class Event(models.Model):
 
 	src = models.ForeignKey(Subject, null=True, related_name='src_events', blank=True)
 	dst = models.ForeignKey(Sink, null=True, related_name='dst_events', blank=True)
-	exchange_event_data = models.ForeignKey(Exchange_Event_Data, null=True, related_name='exch_events', blank=True)
 
 	def __str__(self):
-		return self.type_name() + " " + self.event_timestamp + {
-			0 : "",
-			1 : " " + self.src,
-			2 : " " + self.dst,
-			3 : "",
-			4 : "",
-			5 : " " + self.exchange_event_data
-			}[self.type_id]
+		return self.get_event_type_display() + " " + self.event_timestamp.strftime('%Y-%m-%d') + {
+			COMPLEX : "",
+			INCOME : " " + str(self.src),
+			PAYMENT : " " + str(self.dst),
+			SLICE : "",
+			MERGE : "",
+			EXCHANGE : " " + str(self.exchange_event_data)
+			}[self.event_type]
 
 	class Meta:
 		verbose_name = "event"
 		verbose_name_plural = "events"
+
+
+class Exchange_Event_Data(models.Model):
+	src_currency = models.ForeignKey(Currency, null=False, related_name='exchange_src_event_data_set')
+	dst_currency = models.ForeignKey(Currency, null=False, related_name='exchange_dst_event_data_set')
+	exch_rate = models.IntegerField(null=False)
+	exch_rate_exponent = models.IntegerField(null=False)
+	comment = models.CharField(max_length=1000, null=True, blank=True)
+
+	event = models.OneToOneField(Event, null=False, related_name='exchange_event_data', parent_link=True)
+
+	def __str__(self):
+		return str(self.src_currency) + "/" + str(self.dst_currency) + " " + num_str_exp(self.exch_rate, self.exch_rate_exponent)
+
+	class Meta:
+		verbose_name = "exchange event data"
+		verbose_name_plural = "exchange event data"
 
 
 class Money_Chunk(models.Model):
