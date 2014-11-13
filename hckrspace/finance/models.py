@@ -117,10 +117,6 @@ class Currency(models.Model):
 		verbose_name_plural = "currency"
 
 
-#TODO: Amount: f_value + currency
-#TODO: Duration: t_value + period_unit
-
-
 class Obligation_Period(models.Model):
 	subject = models.ForeignKey(Subject, null=False, related_name='obligation_periods')
 
@@ -155,6 +151,7 @@ class Sink(models.Model):
 		verbose_name = "payment sink"
 		verbose_name_plural = "payment sinks"
 
+#TODO: fixed price sink, periodical sink, fixed price periodical sink
 
 class Sink_Period(models.Model):
 	payment_sink = models.ForeignKey(Sink, null=False, related_name='periods')
@@ -185,7 +182,6 @@ class Sink_Period(models.Model):
 		verbose_name_plural = "payment sink periods"
 
 
-
 class Event(models.Model):
 	commit_timestamp = models.DateTimeField(blank=True, null=False, default=datetime.now())
 
@@ -214,6 +210,7 @@ class Event(models.Model):
 		verbose_name = "event"
 		verbose_name_plural = "events"
 
+# TODO: different tables for different event types - Event - Abstract base class
 
 class Exchange_Event_Data(models.Model):
 	src_currency = models.ForeignKey(Currency, null=False, related_name='exchange_src_event_data_set')
@@ -222,7 +219,7 @@ class Exchange_Event_Data(models.Model):
 	exch_rate_exponent = models.IntegerField(null=False)
 	comment = models.CharField(max_length=1000, null=True, blank=True)
 
-	event = models.OneToOneField(Event, null=False, related_name='exchange_event_data', parent_link=True)
+	event = models.ForeignKey(Event, null=True, related_name='exchange_event_data', blank=True, unique=True)
 
 	def __str__(self):
 		return str(self.src_currency) + "/" + str(self.dst_currency) + " " + num_str_exp(self.exch_rate, self.exch_rate_exponent)
@@ -230,6 +227,8 @@ class Exchange_Event_Data(models.Model):
 	class Meta:
 		verbose_name = "exchange event data"
 		verbose_name_plural = "exchange event data"
+
+
 
 
 class Money_Chunk(models.Model):
