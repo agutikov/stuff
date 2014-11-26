@@ -1,4 +1,4 @@
-#!/usr/bin/python3.3
+#!/usr/bin/python
 
 from inspect import currentframe, getframeinfo
 # print(getframeinfo(currentframe()).lineno)
