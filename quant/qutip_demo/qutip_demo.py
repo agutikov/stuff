@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+<<<<<<< HEAD
 from pprint import pprint
 
 from numpy import *
@@ -32,6 +33,8 @@ qc3
 # qc3.png
 
 
+=======
+>>>>>>> 669632e1ed8da66748aab2470c0eff27f94f6d5e
 
 
 

@@ -1,0 +1,92 @@
+
+
+
+
+
+
+================================================================================
+			НАУЧНО-ПОПУЛЯРНОЕ
+
+
+
+Статья
+Квантовая информатика с человеческим лицом
+http://dou.ua/lenta/articles/quantum-2-2-2/
+
+С.И. Доронин, Квантовая магия
+Кубит и сфера Блоха
+http://quantmag.ppole.ru/QuantumMagic/Doronin1/35.html
+
+Дойч Дэвид
+Структура реальности
+http://www.e-reading.ws/book.php?book=20105
+
+
+Васильев. Квантовые вычисления для программистов.pdf
+
+
+Статья про одну из физических реализаций
+http://science.schoolnano.ru/2012/10/kvantovyj-kompyuter-i-parnaya-igra-v-tennis/
+
+
+ФИЗИЧЕСКАЯ РЕАЛИЗАЦИЯ КВАНТОВОГО КОМПЬЮТЕРА
+http://ido.tsu.ru/schools/physmat/data/res/SPF/uchpos/text/3_8.html
+
+
+================================================================================
+			КВАНТЫ
+
+
+Р. Фейнман, А. Хибс. Квантовая механика и интегралы по траекториям
+
+
+Discrete wave mechanics: An introduction
+
+
+
+================================================================================
+			КВАНТОВЫЕ ВЫЧИСЛЕНИЯ
+
+
+
+Basic concepts in quantum computation
+http://www.quantiki.org/wiki/Basic_concepts_in_quantum_computation
+
+
+Статья
+Взаимные превращения квантовых состояний Белла
+http://samlib.ru/p/putenihin_p_w/prevrash.shtml
+
+
+Алгоритмы - Глава 10
+
+Построение квантовых вычислителей
+http://katpop.narod.ru/txt/quant.htm
+
+
+учебное пособие
+Квантовая информатика и квантовый компьютер.
+
+
+================================================================================
+			МОДЕЛИРОВАНИЕ КВАНТОВЫХ ВЫЧИСЛЕНИЙ
+
+http://www.quantiki.org/wiki/List_of_QC_simulators
+
+
+Sheme
+http://www.het.brown.edu/people/andre/qlambda/
+
+
+http://www.libquantum.de/api/1.1/Quantum-registers.html
+
+
+
+
+
+
+
+
+
+
+

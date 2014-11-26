@@ -1,0 +1,69 @@
+
+
+
+Part 1 - Basics of quantum calculations.
+Part 2 - Model of teoretical quantum computer.
+Part 3 - Physiscal implementations of quantum computers.
+Part 4 - Review of free and opensource software for quantum computer modelling.
+Part 5 - Explanation of Shor's algorythm of quantum factorization.
+Part 6 - Demo of modelling of factorization the number "15" with Shor's algorythm on 7 qubit idial quantum computer.
+Part 7 - Analisys of some myths about quantum computing.
+
+
+
+
+
+
+
+
+Wikipedia: Shor's algorithm
+...
+The factorization also needs huge numbers of quantum gates. It increases with N as (log N)3.[3] Thus factoring of a 4096-bit number requires 4,947,802,324,992 quantum gates.[4]
+...
+
+5*10^12 ~ 2^42
+512 = 2^9
+42-9 = 33
+Ещё около 30-40 лет 4096 ключ не смогут сломать квантовым компом
+
+
+
+
+1) книга "Алгоритмы" гл. 10
+
+2) уровни
+  - квантовые алгоритмы
+  - квантовая логика: кубит и операции с кубитами
+	сюда-же относится моделирование
+  - квантовантовая механика с разными модификациями - физическая реализация
+	для обычного компа это - транзистор, схемотехника, физика полупроводников, и т.д.
+
+3) квантовая механика, волновая функция (как одна из интерпретаций) и интерференция
+
+4) дискретное конфигурационное пространство, уровни энергии, кубит
+
+5) суперпозиция кубитов, квантовый регистр, сцепленное состояние, измерение
+
+6) физическая реализация кубитов
+
+7) операции с кубитами, вентили, тензоры и унитарные матрицы, начальное состояние, шум
+
+8) модель квантовых вычислений на Си
+
+9) софт для моделирования: библиотеки, языки, gui
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
