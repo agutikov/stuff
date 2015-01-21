@@ -1,0 +1,13 @@
+
+
+{% extends "admin/base.html" %}
+
+{% block content %}
+    <h2>Transactions</h2>
+    <ul>
+        {% for transaction in object_list %}
+            <li>{{ transaction }}</li>
+        {% endfor %}
+    </ul>
+{% endblock %}
+
