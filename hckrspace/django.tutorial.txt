@@ -1,0 +1,45 @@
+
+$ python -c "import django; print(django.get_version())"
+
+
+################################################################################
+
+$ django-admin.py startproject mysite
+
+mysite/settings.py
+
+$ python manage.py migrate
+
+
+
+$ python manage.py runserver
+$ python manage.py runserver 8080
+$ python manage.py runserver 0.0.0.0:8000
+
+
+$ python manage.py startapp polls
+
+polls/models.py
+
+$ python manage.py makemigrations polls
+
+$ python manage.py check
+$ python manage.py sqlmigrate polls 0001
+
+$ python manage.py check
+
+
+################################################################################
+
+$ python manage.py createsuperuser
+
+polls/admin.py
+
+
+
+
+
+
+
+
+
