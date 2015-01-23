@@ -122,7 +122,7 @@
         "description": "",
         "timestamp": "2014-12-01T11:14:56Z"
     },
-    "pk": 1
+    "pk": 2
 },
 {
     "model": "finance.transaction",
@@ -130,21 +130,13 @@
         "description": "",
         "timestamp": "2015-01-01T11:14:56Z"
     },
-    "pk": 2
-},
-{
-    "model": "finance.transaction",
-    "fields": {
-        "description": "",
-        "timestamp": "2015-01-23T11:14:56Z"
-    },
     "pk": 3
 },
 {
     "model": "finance.transaction",
     "fields": {
         "description": "",
-        "timestamp": "2014-11-19T11:14:56Z"
+        "timestamp": "2015-01-23T11:14:56Z"
     },
     "pk": 4
 },
@@ -152,7 +144,7 @@
     "model": "finance.transaction",
     "fields": {
         "description": "",
-        "timestamp": "2015-01-14T11:14:56Z"
+        "timestamp": "2014-11-19T11:14:56Z"
     },
     "pk": 5
 },
@@ -160,7 +152,7 @@
     "model": "finance.transaction",
     "fields": {
         "description": "",
-        "timestamp": "2015-01-23T11:14:56Z"
+        "timestamp": "2015-01-14T11:14:56Z"
     },
     "pk": 6
 },
@@ -168,7 +160,7 @@
     "model": "finance.transaction",
     "fields": {
         "description": "",
-        "timestamp": "2014-12-10T11:14:56Z"
+        "timestamp": "2015-01-23T11:14:56Z"
     },
     "pk": 7
 },
@@ -176,18 +168,17 @@
     "model": "finance.transaction",
     "fields": {
         "description": "",
-        "timestamp": "2015-01-23T11:14:56Z"
+        "timestamp": "2014-12-10T11:14:56Z"
     },
     "pk": 8
 },
 {
-    "model": "finance.event",
+    "model": "finance.transaction",
     "fields": {
-        "transaction": 1,
-        "f_value": 10000,
-        "currency": 3
+        "description": "",
+        "timestamp": "2015-01-23T11:14:56Z"
     },
-    "pk": 1
+    "pk": 9
 },
 {
     "model": "finance.event",
@@ -196,16 +187,16 @@
         "f_value": 10000,
         "currency": 3
     },
-    "pk": 2
+    "pk": 1
 },
 {
     "model": "finance.event",
     "fields": {
         "transaction": 3,
-        "f_value": 1000000,
-        "currency": 1
+        "f_value": 10000,
+        "currency": 3
     },
-    "pk": 3
+    "pk": 2
 },
 {
     "model": "finance.event",
@@ -214,12 +205,21 @@
         "f_value": 1000000,
         "currency": 1
     },
-    "pk": 4
+    "pk": 3
 },
 {
     "model": "finance.event",
     "fields": {
         "transaction": 5,
+        "f_value": 1000000,
+        "currency": 1
+    },
+    "pk": 4
+},
+{
+    "model": "finance.event",
+    "fields": {
+        "transaction": 6,
         "f_value": 20000,
         "currency": 4
     },
@@ -228,7 +228,7 @@
 {
     "model": "finance.event",
     "fields": {
-        "transaction": 6,
+        "transaction": 7,
         "f_value": 100000,
         "currency": 2
     },
@@ -237,7 +237,7 @@
 {
     "model": "finance.event",
     "fields": {
-        "transaction": 7,
+        "transaction": 8,
         "f_value": -45000,
         "currency": 4
     },
@@ -246,7 +246,7 @@
 {
     "model": "finance.event",
     "fields": {
-        "transaction": 8,
+        "transaction": 9,
         "f_value": -1700000,
         "currency": 1
     },
@@ -255,7 +255,7 @@
 {
     "model": "finance.payment",
     "fields": {
-        "transaction": 7,
+        "transaction": 8,
         "bill": 1,
         "comment": ""
     },
@@ -264,7 +264,7 @@
 {
     "model": "finance.payment",
     "fields": {
-        "transaction": 8,
+        "transaction": 9,
         "bill": 5,
         "comment": ""
     },
@@ -275,7 +275,7 @@
     "fields": {
         "subject": 1,
         "comment": "",
-        "transaction": 1
+        "transaction": 2
     },
     "pk": 1
 },
@@ -284,7 +284,7 @@
     "fields": {
         "subject": 1,
         "comment": "",
-        "transaction": 2
+        "transaction": 3
     },
     "pk": 2
 },
@@ -293,7 +293,7 @@
     "fields": {
         "subject": 2,
         "comment": "",
-        "transaction": 3
+        "transaction": 4
     },
     "pk": 3
 },
@@ -302,7 +302,7 @@
     "fields": {
         "subject": 2,
         "comment": "",
-        "transaction": 4
+        "transaction": 5
     },
     "pk": 4
 },
@@ -311,7 +311,7 @@
     "fields": {
         "subject": 3,
         "comment": "",
-        "transaction": 5
+        "transaction": 6
     },
     "pk": 5
 },
@@ -320,7 +320,7 @@
     "fields": {
         "subject": 4,
         "comment": "",
-        "transaction": 6
+        "transaction": 7
     },
     "pk": 6
 }

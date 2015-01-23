@@ -18,14 +18,14 @@ $ python manage.py runserver 8080
 $ python manage.py runserver 0.0.0.0:8000
 
 
-$ python manage.py startapp polls
+$ python manage.py startapp finance
 
-polls/models.py
+finance/models.py
 
-$ python manage.py makemigrations polls
+$ python manage.py makemigrations finance
 
 $ python manage.py check
-$ python manage.py sqlmigrate polls 0001
+$ python manage.py sqlmigrate finance 0001
 
 $ python manage.py check
 
@@ -35,7 +35,7 @@ $ python manage.py check
 
 $ python manage.py createsuperuser
 
-polls/admin.py
+finance/admin.py
 
 
 
@@ -45,6 +45,7 @@ polls/admin.py
 $ python manage.py migrate
 $ python manage.py createsuperuser
 $ python manage.py loaddata finance/currency.yaml
+$ python manage.py loaddata finance/initial_totals.json
 $ python manage.py loaddata finance/test_dataset.json
 $ python manage.py runserver 0.0.0.0:8000
 

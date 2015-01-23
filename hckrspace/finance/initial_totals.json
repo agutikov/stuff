@@ -1,0 +1,130 @@
+[
+{
+    "model": "finance.transaction",
+    "fields": {
+        "description": "initial empty transaction",
+        "timestamp": "2014-01-01T00:00:00Z"
+    },
+    "pk": 1
+},
+
+{
+    "model": "finance.balance",
+    "fields": {
+        "transaction": 1,
+        "currency": 1,
+	"f_value": 0
+    },
+    "pk": 1
+},
+{
+    "model": "finance.balance",
+    "fields": {
+        "transaction": 1,
+        "currency": 2,
+	"f_value": 0
+    },
+    "pk": 2
+},
+{
+    "model": "finance.balance",
+    "fields": {
+        "transaction": 1,
+        "currency": 3,
+	"f_value": 0
+    },
+    "pk": 3
+},
+{
+    "model": "finance.balance",
+    "fields": {
+        "transaction": 1,
+        "currency": 4,
+	"f_value": 0
+    },
+    "pk": 4
+},
+
+{
+    "model": "finance.total",
+    "fields": {
+        "transaction": 1,
+	"direction": true,
+        "currency": 1,
+	"f_value": 0
+    },
+    "pk": 1
+},
+{
+    "model": "finance.total",
+    "fields": {
+        "transaction": 1,
+	"direction": true,
+        "currency": 2,
+	"f_value": 0
+    },
+    "pk": 2
+},
+{
+    "model": "finance.total",
+    "fields": {
+        "transaction": 1,
+	"direction": true,
+        "currency": 3,
+	"f_value": 0
+    },
+    "pk": 3
+},
+{
+    "model": "finance.total",
+    "fields": {
+        "transaction": 1,
+	"direction": true,
+        "currency": 4,
+	"f_value": 0
+    },
+    "pk": 4
+},
+
+{
+    "model": "finance.total",
+    "fields": {
+        "transaction": 1,
+	"direction": false,
+        "currency": 1,
+	"f_value": 0
+    },
+    "pk": 5
+},
+{
+    "model": "finance.total",
+    "fields": {
+        "transaction": 1,
+	"direction": false,
+        "currency": 2,
+	"f_value": 0
+    },
+    "pk": 6
+},
+{
+    "model": "finance.total",
+    "fields": {
+        "transaction": 1,
+	"direction": false,
+        "currency": 3,
+	"f_value": 0
+    },
+    "pk": 7
+},
+{
+    "model": "finance.total",
+    "fields": {
+        "transaction": 1,
+	"direction": false,
+        "currency": 4,
+	"f_value": 0
+    },
+    "pk": 8
+}
+
+]

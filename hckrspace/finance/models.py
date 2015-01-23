@@ -3,6 +3,9 @@ from datetime import datetime, date, timedelta
 from dateutil.relativedelta import relativedelta
 import calendar
 from django.contrib.humanize.templatetags.humanize import intcomma
+from django.db.models.signals import post_save
+from django.db.models import Max
+
 
 def num_w_exp (value, exponent):
 	return value / (10**exponent)
@@ -87,7 +90,7 @@ class Bill(models.Model):
 
 
 # Информация хранится в ивентах, привязанных к транзакции
-# Законченная операция (взнос, оплата, обмен) которая может включать в себя несколько
+# Законченная операция (взнос, оплата, обмен) которая может включать в себя несколько событий изменения баланса
 class Transaction(models.Model):
 	timestamp = models.DateTimeField(blank=True, null=False, default=datetime.now())
 
@@ -127,6 +130,21 @@ class Event(models.Model):
 		verbose_name_plural = "events"
 
 
+# add new totals and balance after save new event
+def after_save_event(sender, instance, **kwargs):
+	# add new balance
+	last_balance = Balance.objects.filter(currency=instance.currency).latest('transaction__timestamp')
+	new_balance = Balance(transaction=instance.transaction, currency=instance.currency, f_value=last_balance.f_value + instance.f_value)
+	new_balance.save()
+	# add new total
+	last_total = Total.objects.filter(currency=instance.currency, direction=(instance.f_value > 0)).latest('transaction__timestamp')
+	new_total = Total(transaction=instance.transaction, currency=instance.currency, f_value=last_total.f_value + instance.f_value, direction=(instance.f_value > 0))
+	new_total.save()
+
+# register the post_save signal
+post_save.connect(after_save_event, sender=Event, dispatch_uid=__file__)
+
+
 # Оплата одного счёта
 class Payment(models.Model):
 	bill = models.ForeignKey(Bill, unique=True, null=False, related_name='payment')
@@ -159,25 +177,27 @@ class Membership_fee(models.Model):
 		verbose_name_plural = "membership_fees"
 
 
-# Дополнительная таблица
 # Сумма взносов и оплат по каждой валюте (положительная и отрицательная)
+# Новая запись добавляется в after_save_event
 class Total(models.Model):
 	transaction = models.ForeignKey(Transaction, null=False, related_name='totals')
+
+	# income - true, consumption - false
+	direction = models.BooleanField(default=None)
 
 	currency = models.ForeignKey(Currency, null=False)
 	f_value = models.IntegerField(null=False)
 
 	def __str__(self):
-		return str(self.transaction) + ' ' + self.currency.s_val(self.f_value)
+		return str(self.transaction.timestamp) + ' ' + self.currency.s_val(self.f_value)
 
 	class Meta:
 		verbose_name = "total"
 		verbose_name_plural = "totals"
 
 
-
-# Дополнительная таблица
 # Состояние баланса по каждой валюте
+# Новая запись добавляется в after_save_event
 class Balance(models.Model):
 	transaction = models.ForeignKey(Transaction, null=False, related_name='balances')
 
@@ -185,7 +205,7 @@ class Balance(models.Model):
 	f_value = models.IntegerField(null=False)
 
 	def __str__(self):
-		return str(self.transaction) + ' ' + self.currency.s_val(self.f_value)
+		return str(self.transaction.timestamp) + ' ' + self.currency.s_val(self.f_value)
 
 	class Meta:
 		verbose_name = "balance"
