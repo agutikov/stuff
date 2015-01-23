@@ -17,7 +17,7 @@ admin.site.register(Subject)
 class Bill_Admin(admin.ModelAdmin):
 	list_display = ('id', 'destination', 'details', 'currency', 'f_value', 'from_date', 'till_date', 'due_date')
 	list_display_links = ['id']
-	list_editable = ('destination', 'details', 'currency', 'f_value', 'from_date', 'till_date', 'due_date')
+	list_editable = ('destination', 'currency', 'f_value', 'from_date', 'till_date', 'due_date')
 	search_fields = ['details']
 	list_filter = ['destination']
 

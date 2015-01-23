@@ -3,6 +3,7 @@ $ python -c "import django; print(django.get_version())"
 
 
 ################################################################################
+# start new project
 
 $ django-admin.py startproject mysite
 
@@ -30,6 +31,7 @@ $ python manage.py check
 
 
 ################################################################################
+# modify admin view
 
 $ python manage.py createsuperuser
 
@@ -37,9 +39,24 @@ polls/admin.py
 
 
 
+################################################################################
+# after git clone
+
+$ python manage.py migrate
+$ python manage.py createsuperuser
+$ python manage.py loaddata finance/currency.yaml
+$ python manage.py loaddata finance/test_dataset.json
+$ python manage.py runserver 0.0.0.0:8000
 
 
+################################################################################
+# export database content
 
+python manage.py dumpdata finance --format=json --indent=4 --exclude=finance.currency
+
+
+################################################################################
+# views
 
 
 

@@ -1,0 +1,327 @@
+[
+{
+    "model": "finance.subject",
+    "fields": {
+        "extern_type": 1,
+        "extern_id": "test_subject_04"
+    },
+    "pk": 1
+},
+{
+    "model": "finance.subject",
+    "fields": {
+        "extern_type": 1,
+        "extern_id": "test_subject_03"
+    },
+    "pk": 2
+},
+{
+    "model": "finance.subject",
+    "fields": {
+        "extern_type": 2,
+        "extern_id": "test_subject_02"
+    },
+    "pk": 3
+},
+{
+    "model": "finance.subject",
+    "fields": {
+        "extern_type": 2,
+        "extern_id": "test_subject_01"
+    },
+    "pk": 4
+},
+{
+    "model": "finance.contract",
+    "fields": {
+        "currency": 4,
+        "details": "",
+        "title": "\u0410\u0440\u0435\u043d\u0434\u0430",
+        "f_value": 45000
+    },
+    "pk": 1
+},
+{
+    "model": "finance.contract",
+    "fields": {
+        "currency": 1,
+        "details": "",
+        "title": "\u043a\u043e\u043c\u043c\u0443\u043d\u0430\u043b\u043a\u0430",
+        "f_value": 1000000
+    },
+    "pk": 2
+},
+{
+    "model": "finance.bill",
+    "fields": {
+        "currency": 4,
+        "details": "\u043d\u043e\u044f\u0431\u0440\u044c",
+        "destination": 1,
+        "due_date": "2014-10-31",
+        "till_date": "2014-11-30",
+        "from_date": "2014-11-01",
+        "f_value": 45000
+    },
+    "pk": 1
+},
+{
+    "model": "finance.bill",
+    "fields": {
+        "currency": 4,
+        "details": "\u0434\u0435\u043a\u0430\u0431\u0440\u044c",
+        "destination": 1,
+        "due_date": "2014-11-30",
+        "till_date": "2014-12-31",
+        "from_date": "2014-12-01",
+        "f_value": 45000
+    },
+    "pk": 2
+},
+{
+    "model": "finance.bill",
+    "fields": {
+        "currency": 4,
+        "details": "\u044f\u043d\u0432\u0430\u0440\u044c",
+        "destination": 1,
+        "due_date": "2014-12-31",
+        "till_date": "2015-01-31",
+        "from_date": "2015-01-01",
+        "f_value": 45000
+    },
+    "pk": 3
+},
+{
+    "model": "finance.bill",
+    "fields": {
+        "currency": 4,
+        "details": "\u0444\u0435\u0432\u0440\u0430\u043b\u044c",
+        "destination": 1,
+        "due_date": "2015-01-31",
+        "till_date": "2015-02-28",
+        "from_date": "2015-02-01",
+        "f_value": 45000
+    },
+    "pk": 4
+},
+{
+    "model": "finance.bill",
+    "fields": {
+        "currency": 1,
+        "details": "\u0434\u0435\u043a\u0430\u0431\u0440\u044c",
+        "destination": 2,
+        "due_date": "2015-01-25",
+        "till_date": "2014-12-31",
+        "from_date": "2014-12-01",
+        "f_value": 1700000
+    },
+    "pk": 5
+},
+{
+    "model": "finance.transaction",
+    "fields": {
+        "description": "",
+        "timestamp": "2014-12-01T11:14:56Z"
+    },
+    "pk": 1
+},
+{
+    "model": "finance.transaction",
+    "fields": {
+        "description": "",
+        "timestamp": "2015-01-01T11:14:56Z"
+    },
+    "pk": 2
+},
+{
+    "model": "finance.transaction",
+    "fields": {
+        "description": "",
+        "timestamp": "2015-01-23T11:14:56Z"
+    },
+    "pk": 3
+},
+{
+    "model": "finance.transaction",
+    "fields": {
+        "description": "",
+        "timestamp": "2014-11-19T11:14:56Z"
+    },
+    "pk": 4
+},
+{
+    "model": "finance.transaction",
+    "fields": {
+        "description": "",
+        "timestamp": "2015-01-14T11:14:56Z"
+    },
+    "pk": 5
+},
+{
+    "model": "finance.transaction",
+    "fields": {
+        "description": "",
+        "timestamp": "2015-01-23T11:14:56Z"
+    },
+    "pk": 6
+},
+{
+    "model": "finance.transaction",
+    "fields": {
+        "description": "",
+        "timestamp": "2014-12-10T11:14:56Z"
+    },
+    "pk": 7
+},
+{
+    "model": "finance.transaction",
+    "fields": {
+        "description": "",
+        "timestamp": "2015-01-23T11:14:56Z"
+    },
+    "pk": 8
+},
+{
+    "model": "finance.event",
+    "fields": {
+        "transaction": 1,
+        "f_value": 10000,
+        "currency": 3
+    },
+    "pk": 1
+},
+{
+    "model": "finance.event",
+    "fields": {
+        "transaction": 2,
+        "f_value": 10000,
+        "currency": 3
+    },
+    "pk": 2
+},
+{
+    "model": "finance.event",
+    "fields": {
+        "transaction": 3,
+        "f_value": 1000000,
+        "currency": 1
+    },
+    "pk": 3
+},
+{
+    "model": "finance.event",
+    "fields": {
+        "transaction": 4,
+        "f_value": 1000000,
+        "currency": 1
+    },
+    "pk": 4
+},
+{
+    "model": "finance.event",
+    "fields": {
+        "transaction": 5,
+        "f_value": 20000,
+        "currency": 4
+    },
+    "pk": 5
+},
+{
+    "model": "finance.event",
+    "fields": {
+        "transaction": 6,
+        "f_value": 100000,
+        "currency": 2
+    },
+    "pk": 6
+},
+{
+    "model": "finance.event",
+    "fields": {
+        "transaction": 7,
+        "f_value": -45000,
+        "currency": 4
+    },
+    "pk": 7
+},
+{
+    "model": "finance.event",
+    "fields": {
+        "transaction": 8,
+        "f_value": -1700000,
+        "currency": 1
+    },
+    "pk": 8
+},
+{
+    "model": "finance.payment",
+    "fields": {
+        "transaction": 7,
+        "bill": 1,
+        "comment": ""
+    },
+    "pk": 1
+},
+{
+    "model": "finance.payment",
+    "fields": {
+        "transaction": 8,
+        "bill": 5,
+        "comment": ""
+    },
+    "pk": 2
+},
+{
+    "model": "finance.membership_fee",
+    "fields": {
+        "subject": 1,
+        "comment": "",
+        "transaction": 1
+    },
+    "pk": 1
+},
+{
+    "model": "finance.membership_fee",
+    "fields": {
+        "subject": 1,
+        "comment": "",
+        "transaction": 2
+    },
+    "pk": 2
+},
+{
+    "model": "finance.membership_fee",
+    "fields": {
+        "subject": 2,
+        "comment": "",
+        "transaction": 3
+    },
+    "pk": 3
+},
+{
+    "model": "finance.membership_fee",
+    "fields": {
+        "subject": 2,
+        "comment": "",
+        "transaction": 4
+    },
+    "pk": 4
+},
+{
+    "model": "finance.membership_fee",
+    "fields": {
+        "subject": 3,
+        "comment": "",
+        "transaction": 5
+    },
+    "pk": 5
+},
+{
+    "model": "finance.membership_fee",
+    "fields": {
+        "subject": 4,
+        "comment": "",
+        "transaction": 6
+    },
+    "pk": 6
+}
+]
