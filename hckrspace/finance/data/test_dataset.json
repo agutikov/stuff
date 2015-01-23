@@ -2,7 +2,8 @@
 {
     "model": "finance.subject",
     "fields": {
-        "extern_type": 1,
+        "extern_app_name": "personal_info",
+        "extern_model_name": "user",
         "extern_id": "test_subject_04"
     },
     "pk": 1
@@ -10,7 +11,8 @@
 {
     "model": "finance.subject",
     "fields": {
-        "extern_type": 1,
+        "extern_app_name": "personal_info",
+        "extern_model_name": "user",
         "extern_id": "test_subject_03"
     },
     "pk": 2
@@ -18,7 +20,8 @@
 {
     "model": "finance.subject",
     "fields": {
-        "extern_type": 2,
+        "extern_app_name": "personal_info",
+        "extern_model_name": "user",
         "extern_id": "test_subject_02"
     },
     "pk": 3
@@ -26,7 +29,8 @@
 {
     "model": "finance.subject",
     "fields": {
-        "extern_type": 2,
+        "extern_app_name": "personal_info",
+        "extern_model_name": "user",
         "extern_id": "test_subject_01"
     },
     "pk": 4

@@ -1,12 +1,12 @@
 
 
-{% extends "admin/base.html" %}
-
 {% block content %}
-    <h2>Transactions</h2>
+    <h3>Transactions</h3>
     <ul>
         {% for transaction in object_list %}
-            <li>{{ transaction }}</li>
+            <li>
+			<a href="{% url 'finance.views.transaction_detail' transaction_id=transaction.id %}">{{ transaction }}</a>
+	    </li>
         {% endfor %}
     </ul>
 {% endblock %}

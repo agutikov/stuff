@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Balance',
             fields=[
-                ('id', models.AutoField(auto_created=True, serialize=False, verbose_name='ID', primary_key=True)),
+                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
                 ('f_value', models.IntegerField()),
             ],
             options={
@@ -26,11 +26,11 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Bill',
             fields=[
-                ('id', models.AutoField(auto_created=True, serialize=False, verbose_name='ID', primary_key=True)),
-                ('details', models.TextField(null=True, blank=True)),
+                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
+                ('details', models.TextField(blank=True, null=True)),
                 ('f_value', models.IntegerField()),
-                ('from_date', models.DateField(null=True, blank=True)),
-                ('till_date', models.DateField(null=True, blank=True)),
+                ('from_date', models.DateField(blank=True, null=True)),
+                ('till_date', models.DateField(blank=True, null=True)),
                 ('due_date', models.DateField()),
             ],
             options={
@@ -42,10 +42,10 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Contract',
             fields=[
-                ('id', models.AutoField(auto_created=True, serialize=False, verbose_name='ID', primary_key=True)),
+                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
                 ('title', models.CharField(max_length=200)),
-                ('details', models.TextField(null=True, blank=True)),
-                ('f_value', models.IntegerField(null=True, blank=True)),
+                ('details', models.TextField(blank=True, null=True)),
+                ('f_value', models.IntegerField(blank=True, null=True)),
             ],
             options={
                 'verbose_name': 'contract',
@@ -56,7 +56,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Currency',
             fields=[
-                ('id', models.AutoField(auto_created=True, serialize=False, verbose_name='ID', primary_key=True)),
+                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
                 ('name', models.CharField(unique=True, max_length=100)),
                 ('code_num_3', models.CharField(unique=True, max_length=3)),
                 ('code_ascii_3', models.CharField(unique=True, max_length=3)),
@@ -71,7 +71,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Event',
             fields=[
-                ('id', models.AutoField(auto_created=True, serialize=False, verbose_name='ID', primary_key=True)),
+                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
                 ('f_value', models.IntegerField()),
                 ('currency', models.ForeignKey(to='finance.Currency')),
             ],
@@ -84,8 +84,8 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Membership_fee',
             fields=[
-                ('id', models.AutoField(auto_created=True, serialize=False, verbose_name='ID', primary_key=True)),
-                ('comment', models.TextField(null=True, blank=True)),
+                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
+                ('comment', models.TextField(blank=True, null=True)),
             ],
             options={
                 'verbose_name': 'membership_fee',
@@ -96,9 +96,9 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Payment',
             fields=[
-                ('id', models.AutoField(auto_created=True, serialize=False, verbose_name='ID', primary_key=True)),
-                ('comment', models.TextField(null=True, blank=True)),
-                ('bill', models.ForeignKey(to='finance.Bill', related_name='payment', unique=True)),
+                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
+                ('comment', models.TextField(blank=True, null=True)),
+                ('bill', models.ForeignKey(unique=True, related_name='payment', to='finance.Bill')),
             ],
             options={
                 'verbose_name': 'payment',
@@ -109,9 +109,10 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Subject',
             fields=[
-                ('id', models.AutoField(auto_created=True, serialize=False, verbose_name='ID', primary_key=True)),
+                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
                 ('extern_id', models.CharField(max_length=256)),
-                ('extern_type', models.IntegerField()),
+                ('extern_model_name', models.CharField(max_length=256)),
+                ('extern_app_name', models.CharField(max_length=256)),
             ],
             options={
                 'verbose_name': 'subject (user)',
@@ -122,7 +123,8 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Total',
             fields=[
-                ('id', models.AutoField(auto_created=True, serialize=False, verbose_name='ID', primary_key=True)),
+                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
+                ('direction', models.BooleanField(default=None)),
                 ('f_value', models.IntegerField()),
                 ('currency', models.ForeignKey(to='finance.Currency')),
             ],
@@ -135,9 +137,9 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Transaction',
             fields=[
-                ('id', models.AutoField(auto_created=True, serialize=False, verbose_name='ID', primary_key=True)),
-                ('timestamp', models.DateTimeField(blank=True, default=datetime.datetime(2015, 1, 21, 16, 20, 57, 997240))),
-                ('description', models.TextField(null=True, blank=True)),
+                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
+                ('timestamp', models.DateTimeField(default=datetime.datetime(2015, 1, 23, 16, 16, 53, 113062), blank=True)),
+                ('description', models.TextField(blank=True, null=True)),
             ],
             options={
                 'verbose_name': 'transaction',
@@ -148,37 +150,37 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='total',
             name='transaction',
-            field=models.ForeignKey(to='finance.Transaction', related_name='totals'),
+            field=models.ForeignKey(related_name='totals', to='finance.Transaction'),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='payment',
             name='transaction',
-            field=models.ForeignKey(to='finance.Transaction', related_name='payment', unique=True),
+            field=models.ForeignKey(unique=True, related_name='payment', to='finance.Transaction'),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='membership_fee',
             name='subject',
-            field=models.ForeignKey(to='finance.Subject', related_name='membership_fees'),
+            field=models.ForeignKey(related_name='membership_fees', to='finance.Subject'),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='membership_fee',
             name='transaction',
-            field=models.ForeignKey(to='finance.Transaction', related_name='membership_fee', unique=True),
+            field=models.ForeignKey(unique=True, related_name='membership_fee', to='finance.Transaction'),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='event',
             name='transaction',
-            field=models.ForeignKey(to='finance.Transaction', related_name='events'),
+            field=models.ForeignKey(related_name='events', to='finance.Transaction'),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='contract',
             name='currency',
-            field=models.ForeignKey(to='finance.Currency', null=True, blank=True),
+            field=models.ForeignKey(null=True, blank=True, to='finance.Currency'),
             preserve_default=True,
         ),
         migrations.AddField(
@@ -190,7 +192,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='bill',
             name='destination',
-            field=models.ForeignKey(to='finance.Contract', related_name='bills'),
+            field=models.ForeignKey(related_name='bills', to='finance.Contract'),
             preserve_default=True,
         ),
         migrations.AddField(
@@ -202,7 +204,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='balance',
             name='transaction',
-            field=models.ForeignKey(to='finance.Transaction', related_name='balances'),
+            field=models.ForeignKey(related_name='balances', to='finance.Transaction'),
             preserve_default=True,
         ),
     ]

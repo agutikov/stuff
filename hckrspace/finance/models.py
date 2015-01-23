@@ -39,10 +39,11 @@ class Currency(models.Model):
 # Субъект с внешним (относительно этого модуля) id который может делать взносы
 class Subject(models.Model):
 	extern_id = models.CharField(max_length=256, null=False)
-	extern_type = models.IntegerField(null=False)
+	extern_model_name = models.CharField(max_length=256, null=False)
+	extern_app_name = models.CharField(max_length=256, null=False)
 
 	def __str__(self):
-		return ("%d " % self.extern_type) + self.extern_id
+		return ("%s.%s.%s" % (self.extern_app_name, self.extern_model_name, self.extern_id))
 
 	class Meta:
 		verbose_name = "subject (user)"
