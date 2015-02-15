@@ -110,7 +110,7 @@ work_area_x = 200;
 work_area_y = 200;
 operation_area_x = 2*work_area_x;
 operation_area_y = 2*work_area_y;
-mount_width = 250;
+mount_width = 150;
 vertical_height = 150;
 mill_mount_w = 70;
 arrow_len = work_area_x - mill_mount_w;
@@ -135,11 +135,32 @@ module I (l, w1, w2) {
 	L(w2);
 }
 
-// полная длинна основания: 400 + 250 + 100 = 750
-base_length = operation_area_x + mount_width + 2*L_w;
+
+module II (l, w1, w2, dw) {
+	translate([0, dw/2 + pipe_w/2, 0])
+	pipe(l);
+
+	translate([0, -(dw/2 + pipe_w/2), 0])
+	pipe(l);
+
+	translate([-L_r, -(w1/2 - pipe_w/2), pipe_w+L_s])
+	rotate([0, 180, -90])
+	L(w1);
+
+	translate([l + L_r, w2/2 + pipe_w/2, pipe_w+L_s])
+	rotate([0, 180, 90])
+	L(w2);
+}
+
+// полная длинна основания: 400 + 150 + 50 = 600
+base_length = operation_area_x + mount_width + L_w;
 
 module base() {
-	I(base_length, operation_area_y, operation_area_y);
+	pipe(base_length);
+
+	translate([base_length + L_r, (operation_area_y + pipe_w)/2, pipe_w+L_s])
+	rotate([0, 180, 90])
+	L(operation_area_y);
 }
 
 col_h = vertical_height + (mount_width-pipe_w)/2;
@@ -147,6 +168,7 @@ col_h = vertical_height + (mount_width-pipe_w)/2;
 module column() {
 	translate([0, 0, L_r])
 	rotate([0, -90, 90])
+//	II(col_h, mount_width, mount_width, mount_width - 2*pipe_w - 2*35);
 	I(col_h, mount_width, mount_width);
 }
 
@@ -172,7 +194,7 @@ module arrow () {
 
 difference() {
 	union () {
-		translate([arrow_len + mount_width + pipe_w, pipe_w, 0])
+		translate([arrow_len + mount_width, pipe_w, 0])
 		rotate([0, 0, 180])
 		base();
 
