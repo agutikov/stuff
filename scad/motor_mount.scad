@@ -137,51 +137,59 @@ tube_mount_position_A = 0; // угол поворота крепления тр�
 
 ear_hole_position_R = 28; // расстояние от центра до отверстия в ухе
 ear_position_A = 28; // угол поворота ушей относительно остальных элементов
-// ear_position_A = -28; // зеркальное положение ушей
 
 mount_A = 28;
 mount_hole_position_R = mount_A/2/cos(30); // расстояние от центра до отверстия для крепления
 mount_hole_number = 3; // количество отверстий
 mount_hole_position_A = 0; // угол поворота всех отверстий относительно остальных элементов
+motor_wire_hole_A = 60; // угол поворота выемки для проводов
 
+module motor_mount (ear_A, wire_A) {
 
-difference() {
-	union() {
-		rotate([0,0,tube_mount_position_A]) 
-		translate([0,0,p_W/4+base_H]) 
-		{ 
-			p_mount();	
-		}
-
-		translate([0,0,base_H/2]) { base(); }
-	
-		rotate([0,0, ear_position_A]) 
+	difference() {
 		union() {
-			translate([-ear_hole_position_R, 0, ear_H/2]) { ear(); }
-			mirror([1,0,0]) { translate([-ear_hole_position_R, 0, ear_H/2]) { ear(); } }
-		}
-
-	}
-	union() {
-		for (i = [0 : mount_hole_number-1])
-		{
-			rotate([0,0, mount_hole_position_A + 360/mount_hole_number*i]) 
-			translate([mount_hole_position_R, 0, tube_D]) 
+			rotate([0,0,tube_mount_position_A]) 
+			translate([0,0,p_W/4+base_H]) 
 			{ 
-				mount_hole(tube_D*2, base_H); 
+				p_mount();	
 			}
-		}
-		rotate([0,0,-60])
-		translate([base_D/2,0,0])
-			cylinder(d=12, h=base_H);
 
-		translate([0,0,0])
-			cylinder(d=base_center_hole_D, h=base_center_hole_H, center=true);
+			translate([0,0,base_H/2]) { base(); }
+		
+			rotate([0,0, ear_A]) 
+			union() {
+				translate([-ear_hole_position_R, 0, ear_H/2]) { ear(); }
+				mirror([1,0,0]) { translate([-ear_hole_position_R, 0, ear_H/2]) { ear(); } }
+			}
+
+		}
+		union() {
+			for (i = [0 : mount_hole_number-1])
+			{
+				rotate([0,0, mount_hole_position_A + 360/mount_hole_number*i]) 
+				translate([mount_hole_position_R, 0, tube_D]) 
+				{ 
+					mount_hole(tube_D*2, base_H); 
+				}
+			}
+			rotate([0, 0, wire_A])
+			translate([base_D/2,0,0])
+				cylinder(d=12, h=base_H);
+
+			translate([0,0,0])
+				cylinder(d=base_center_hole_D, h=base_center_hole_H, center=true);
+		}
 	}
+
 }
 
 
+// motor_mount(ear_position_A, -motor_wire_hole_A);
 
+
+translate([0, 0, 0])
+rotate([0, 0, 0])
+	motor_mount(-ear_position_A, motor_wire_hole_A);
 
 
 
