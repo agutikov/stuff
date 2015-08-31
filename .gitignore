@@ -22,3 +22,7 @@
 *.png
 *.tif
 *.tiff
+
+
+usb_proto/channels
+

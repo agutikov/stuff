@@ -44,9 +44,9 @@ with open(sys.argv[1]) as f:
 				sample_54 = sample[:sample_size]
 				sample = sample[sample_size:]
 				signal = struct.unpack('h'*channels_count, sample_54)
-				print(' '.join('{:d}'.format(x) for x in signal))
+#				print(' '.join('{:d}'.format(x) for x in signal))
 				for ch in range(0, channels_count):
-					channel_files[ch].write("%d\n" % signal[ch])
+					channel_files[ch].write("%d %d\n" % (sample_count, signal[ch]))
 				sample_count += 1
 
 
