@@ -48,6 +48,7 @@ Discrete wave mechanics: An introduction
 			КВАНТОВЫЕ ВЫЧИСЛЕНИЯ
 
 
+http://www.physics.udel.edu/~msafrono/650/Lecture%208.pdf
 
 Basic concepts in quantum computation
 http://www.quantiki.org/wiki/Basic_concepts_in_quantum_computation
