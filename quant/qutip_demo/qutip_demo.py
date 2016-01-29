@@ -28,9 +28,10 @@ qc3.add_gate("RY", 1, None, pi/2, r"\pi/2")
 qc3.add_gate("RZ", 2, None, pi/2, r"\pi/2")
 qc3.add_gate("ISWAP", [1, 2])
 
-qc3
 
-# qc3.png
+qc3.png
+
+
 
 
 

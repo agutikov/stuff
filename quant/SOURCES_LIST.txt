@@ -50,6 +50,8 @@ Discrete wave mechanics: An introduction
 
 http://www.physics.udel.edu/~msafrono/650/Lecture%208.pdf
 
+
+
 Basic concepts in quantum computation
 http://www.quantiki.org/wiki/Basic_concepts_in_quantum_computation
 
@@ -74,13 +76,15 @@ http://katpop.narod.ru/txt/quant.htm
 
 http://www.quantiki.org/wiki/List_of_QC_simulators
 
+http://www.libquantum.de/api/1.1/Quantum-registers.html
+
+http://www.quantumplayground.net/#/home
+
+http://qutip.org/tutorials.html
+
 
 Sheme
 http://www.het.brown.edu/people/andre/qlambda/
-
-
-http://www.libquantum.de/api/1.1/Quantum-registers.html
-
 
 
 
