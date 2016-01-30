@@ -3,7 +3,7 @@
 
 from pprint import pprint
 
-from numpy import pi
+import numpy as np
 
 from qutip import *
 
@@ -16,10 +16,10 @@ from IPython.display import Image
 
 
 
-q_reg_width = 11
+q_reg_width = 12
 
 # q_reg_width = 16 - number of qubits in register
-# 2**q_reg_width = 64*1024    - size of vector, number of complex numbers in discrete psi function
+# 2**q_reg_width = 64*1024    - size of state vector, number of complex numbers in discrete psi function
 # 2**(2*q_reg_width) = 4*1024*1024*1024    - size of matrix of unitary transform
 
 
@@ -55,19 +55,19 @@ def Hadamard (q_bit):
 
 def SigmaX (q_bit):
     global qc
-    qc.add_gate("RX", q_bit, None, pi, r"\pi")
+    qc.add_gate("RX", q_bit, None, np.pi, r"\pi")
     count("SigmaX")
     out_of_range_check("SigmaX", q_bit)
 
 def SigmaY (q_bit):
     global qc
-    qc.add_gate("RY", q_bit, None, pi, r"\pi")
+    qc.add_gate("RY", q_bit, None, np.pi, r"\pi")
     count("SigmaY")
     out_of_range_check("SigmaY", q_bit)
 
 def SigmaZ (q_bit):
     global qc
-    qc.add_gate("RZ", q_bit, None, pi, r"\pi")
+    qc.add_gate("RZ", q_bit, None, np.pi, r"\pi")
     count("SigmaZ")
     out_of_range_check("SigmaZ", q_bit)
 
@@ -88,7 +88,7 @@ def Toffoli (control_1_q_bit, control_0_q_bit, q_bit):
 
 def CPhase (control_q_bit, q_bit, theta):
     global qc
-    qc.add_gate("CPHASE", q_bit, control_q_bit, theta, "\pi/%d" % (pi/theta))
+    qc.add_gate("CPHASE", q_bit, control_q_bit, theta, "\pi/%d" % (np.pi/theta))
     count("CPhase")
     out_of_range_check("CPhase", control_q_bit, q_bit)
     
@@ -415,44 +415,48 @@ def qft (n, start=0):
     for i in range(n):
         for j in range(i):
             d = 2**(i - j)
-            CPhase(i, j, pi/d)
+            CPhase(i, j, np.pi/d)
         Hadamard(i)
 
 
 
 N = 15
 
-width = bit_width(N*2) 
-swidth = bit_width(N) # width - 1
+width = bit_width(N)
+width_2 = bit_width(N**2)
 
 print("width of N=%d : %d" % (N, width))
 
 x = 4
 
 
-for i in range(0, q_reg_width):
+width = 2
+width_2 = 4
+
+for i in range(width):
     Hadamard(i)
 
-width = 3
-swidth = width - 1
-
-exp_mod_n(N, x, width, swidth)
+exp_mod_n(N, x, width_2, width)
 
 qft(width)
 
 
 pprint(counts)
 
-qc.png
+U = gate_sequence_product(qc.propagators())
 
-print("Propagators\n")
-prop = qc.propagators()
+state = basis(2)
+for i in range(q_reg_width - 1):
+    state = tensor(state, basis(2))
 
-print("Product\n")
-sp = gate_sequence_product(prop)
+pprint(state)
 
-print("print\n")
-pprint(sp)
+pprint(U)
+
+pprint(U * state)
+
+pprint(expect(U, state))
+
 
 
 
@@ -470,11 +474,9 @@ if False:
     from qutip.qip.models.spinchain import *
     from qutip.qip.models.cqed import *
 
-    cp = DispersivecQED(q_reg_width, True)
+    sc = LinearSpinChain(q_reg_width)
 
-    cp.load_circuit(qc)
-
-    cp.plot_pulses()
+    u_list = sc.run(qc)
 
 
 if False:
