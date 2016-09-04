@@ -1,4 +1,18 @@
 
+
+# after git clone
+
+$ python manage.py migrate
+$ python manage.py createsuperuser
+$ python manage.py loaddata finance/data/currency.yaml
+$ python manage.py loaddata finance/data/initial_totals.json
+$ python manage.py loaddata finance/data/test_dataset.json
+$ python manage.py runserver 0.0.0.0:8000
+
+
+
+
+
 Интеграция.
 
 модель == тип объектов

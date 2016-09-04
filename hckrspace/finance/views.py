@@ -15,5 +15,14 @@ def transaction_detail(request, transaction_id):
 	return HttpResponse(tr)
 
 
+#import logging
+from pprint import pprint
+
+#logger = logging.getLogger('project.interesting.stuff')
+
 def index(request):
+	
+#	logger.debug(request.META)
+	pprint(request.META)
+	
 	return HttpResponse("Hello, world. You're at the finance index.")

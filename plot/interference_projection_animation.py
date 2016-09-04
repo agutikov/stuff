@@ -13,6 +13,7 @@ x = np.arange(-3*np.pi, 3*np.pi, 0.01)        # x-array
 line, = ax.plot(x, np.sin(x))
 
 
+
 D = 3
 L = 3
 

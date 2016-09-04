@@ -1,4 +1,5 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
+
 
 from inspect import currentframe, getframeinfo
 # print(getframeinfo(currentframe()).lineno)
@@ -23,8 +24,8 @@ if len(sys.argv) != 3:
 	print("example:\n%s 15 $[13*7]\n" % sys.argv[0])
 	exit(1)
 
-a = int(sys.argv[1])
-N = int(sys.argv[2])
+a = 4 # int(sys.argv[1])
+N = 15 # int(sys.argv[2])
 
 print("N = %d, a = %d" % (N, a))
 
@@ -105,6 +106,10 @@ ax1.set_title('f(x)=%d^x mod %d, x=[0, %d]' % (a, N, count))
 ax1.set_xlabel('x')
 ax1.set_ylabel('%d^x mod %d' % (a, N))
 ax1.plot(func_values[:count])
+
+
+plt.show()
+
 
 ax2 = fig.add_subplot(6,2, 2)
 ax2.set_ylabel('phase(fft)')
@@ -263,4 +268,4 @@ ax_3d_2.scatter(X, Y, Z)
 """
 
 
-plt.show()
+# plt.show()

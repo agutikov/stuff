@@ -16,7 +16,7 @@ from IPython.display import Image
 
 
 
-q_reg_width = 12
+q_reg_width = 10
 
 # q_reg_width = 16 - number of qubits in register
 # 2**q_reg_width = 64*1024    - size of state vector, number of complex numbers in discrete psi function
@@ -419,6 +419,40 @@ def qft (n, start=0):
         Hadamard(i)
 
 
+qft(5)
+
+qc.png
+
+
+quit()
+
+w = 4
+
+for i in range(w):
+    Hadamard(i)
+
+add_mod_n(15, 6, w)
+
+pprint(counts)
+
+
+U = gate_sequence_product(qc.propagators())
+
+state = tensor([basis(2) for i in range(q_reg_width)])
+
+
+
+pprint(state)
+pprint(U)
+pprint(U * state)
+
+
+
+
+
+quit()
+
+
 
 N = 15
 
@@ -445,20 +479,17 @@ pprint(counts)
 
 U = gate_sequence_product(qc.propagators())
 
-state = basis(2)
-for i in range(q_reg_width - 1):
-    state = tensor(state, basis(2))
+state = tensor([basis(2) for i in range(q_reg_width)])
 
 pprint(state)
-
 pprint(U)
-
 pprint(U * state)
 
 pprint(expect(U, state))
 
+res = state.extract_states([0, 1, 2, 3], normalize=True)
 
-
+pprint(res)
 
 quit()
 
