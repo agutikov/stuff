@@ -49,7 +49,20 @@ module hole (d1, d2, h1, h2) {
 
 module half_mount () {
 	difference() {
-		sphere( d=ball_D );
+		union() {
+			sphere( d=ball_D );
+/*
+			difference() {
+				scale([5.0, 2.0, 1.0]) sphere(d=20, center=true);
+				translate([-50, 0, 0]) cube([100, 100, 100], center=true);
+			}
+			rotate([0, 0, tube_a1])
+			difference() {
+				scale([2.0, 5.0, 1.0]) sphere(d=20, center=true);
+				translate([0, -50, 0]) cube([100, 100, 100], center=true);
+			}
+*/
+		}
 		union() {
 			translate([0, 0, -50]) cube([100, 100, 100], center=true);
 			translate([0, 0, 50 + mount_H]) cube([100, 100, 100], center=true);
@@ -57,8 +70,8 @@ module half_mount () {
 			
 			translate([0, -50 - shaft_d + ball_D/2, 0]) cube([shaft_W, 100, shaft_H], center=true);
 			
-			translate([0, 0, 0]) rotate([0, 90, 0]) cylinder(d=tube_D2, h=100, center=false);
-			translate([0, 0, 0]) rotate([-90, 0, tube_a1]) cylinder(d=tube_D1, h=100, center=false);
+			translate([0, 0, 0]) rotate([0, 90, -tube_a1]) cylinder(d=tube_D2, h=100, center=false);
+			translate([0, 0, 0]) rotate([-90, 0, 0]) cylinder(d=tube_D1, h=100, center=false);
 			
 			translate([0, 0, mount_H-mount_center_hole_H]) cylinder(d=mount_center_hole_D, h=mount_center_hole_H+10, center=false);
 			
@@ -66,9 +79,9 @@ module half_mount () {
 			rotate([0, 0, 120 - 90]) translate([mount_hole_pos_R, 0, mount_H - mount_layer_H]) hole(mount_hole_D, mount_hole_D2, 40, 40);
 			rotate([0, 0, 240 - 90]) translate([mount_hole_pos_R, 0, mount_H - mount_layer_H]) hole(mount_hole_D, mount_hole_D2, 40, 40);
 			
-			rotate([0, 0, 180 + 20]) translate([ball_D/2 - conn_dr, 0, conn_H]) mirror([0, 0, 1]) hole(mount_hole_D, mount_hole_D2, 40, 40);
-			rotate([0, 0, 120 + 180 + 20]) translate([ball_D/2 - conn_dr, 0, conn_H]) mirror([0, 0, 1]) hole(mount_hole_D, mount_hole_D2, 40, 40);
-			rotate([0, 0, 240 + 180 + 20]) translate([ball_D/2 - conn_dr, 0, conn_H]) mirror([0, 0, 1]) hole(mount_hole_D, mount_hole_D2, 40, 40);
+			rotate([0, 0, 180 + 15]) translate([ball_D/2 - conn_dr, 0, conn_H]) mirror([0, 0, 1]) hole(mount_hole_D, mount_hole_D2, 40, 40);
+			rotate([0, 0, 120 + 180 + 15]) translate([ball_D/2 - conn_dr, 0, conn_H]) mirror([0, 0, 1]) hole(mount_hole_D, mount_hole_D2, 40, 40);
+			rotate([0, 0, 240 + 180 + 15]) translate([ball_D/2 - conn_dr, 0, conn_H]) mirror([0, 0, 1]) hole(mount_hole_D, mount_hole_D2, 40, 40);
 			
 		}
 	}
