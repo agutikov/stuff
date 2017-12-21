@@ -9,16 +9,16 @@ $fn=60;
 
 ball_D = 60; // диаметр шара
 shaft_W = 16; // ширина отверстия для луча
-shaft_H = 26; // высота отверстия для луча
+shaft_H = 15; // высота отверстия для луча
 mount_H = shaft_H/2 + 8; // высота расположения маунта (основания мотора)
 mount_hole_D = 3; // диаметр отверстия (толщина болтов)
 mount_hole_D2 = 6; // диаметр углубления возле отверстия (диаметр шайбы)
 mount_hole_pos_W = 28; // расстояние между отверстиями для крепления мотора
 mount_center_hole_D = 10; // диаметр центрального углубления
 mount_center_hole_H = 3; // глубина центрального углубления
-tube_D1 = 8.6; // диаметр трубки вдоль луча
+tube_D1 = 10.6; // диаметр трубки вдоль луча
 tube_D2 = 10.6; // диаметр трубки перпендикулярной лучу
-tube_a1 = 4; // угол трубки вдоль луча
+tube_a1 = 0; // угол трубки вдоль луча
 shaft_d = 15; // расстояние от края сферы до конца луча
 conn_H = 4; // толщина слоя между болтами соединяющими две половины маунта
 conn_dr = 7; // расстояние от края сферы до отверстий для соединения полусфер
@@ -70,7 +70,7 @@ module half_mount () {
 			
 			translate([0, -50 - shaft_d + ball_D/2, 0]) cube([shaft_W, 100, shaft_H], center=true);
 			
-			translate([0, 0, 0]) rotate([0, 90, -tube_a1]) cylinder(d=tube_D2, h=100, center=false);
+			translate([-50, 0, 0]) rotate([0, 90, -tube_a1]) cylinder(d=tube_D2, h=100, center=false);
 			translate([0, 0, 0]) rotate([-90, 0, 0]) cylinder(d=tube_D1, h=100, center=false);
 			
 			translate([0, 0, mount_H-mount_center_hole_H]) cylinder(d=mount_center_hole_D, h=mount_center_hole_H+10, center=false);
@@ -87,4 +87,9 @@ module half_mount () {
 		}
 	}
 }
+
+
+translate([-ball_D/2 - 1, 0, 0]) rotate([180, 0, 0]) mirror([0, 0, 1]) half_mount();
+
+translate([ball_D/2 + 1, 0, 0]) half_mount();
 
