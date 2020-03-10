@@ -8,11 +8,18 @@ import pygame
 from collections import namedtuple
 import math
 
-#TODO: numpy
-#TODO: manual scale and move viewport, coordinate mesh legend, focus selection, ball size scale, rotation, collision, cmdline, args presets
 #TODO: autoscale time
+#TODO: numpy
+#TODO: rotation
+#TODO: collision
+#TODO: focus selection
 #TODO: multiple windows with different focus: (0,0), body_1, body_2, rotation
+#TODO: cmdline
+#TODO: args presets
+#TODO: telemetry prints
 #TODO: telemetry overlay: time, coordinates, linear velocity and projections, tangential and radial relative velocity, distance, angular velocity, angle, acceleration and acc projections
+#TODO: manual scale and move viewport
+#TODO: coordinate mesh legend
 #TODO: check conservation laws: energy, impule, momentum
 #TODO: multiple bodies and 3d
 
@@ -85,18 +92,20 @@ V0 = 0
 V1 = 35000
 M0 = 2*10**30
 #M0 = 6*10**24
-M1 = 6*10**24
+#M1 = 6*10**24
+M1 = 1*10**30
 G = 6.67*10**-11
 
 window_width_px = 800
 window_height_px = 600
 initial_distance_px = 100
 initial_grid_size_px = 80
+initial_px_size = R/initial_distance_px
+
 autoscale_grid = False
 autoscale = False
-follow = False
+follow = True
 
-#TIME_ACCEL = 3600
 TIME_ACCEL = 1000
 
 max_fps = 10000
@@ -108,7 +117,7 @@ class Model:
 	def __init__(self):
 		self.time_accel = TIME_ACCEL
 
-		self.px_size = R/initial_distance_px
+		self.px_size = initial_px_size
 
 		self.viewport_width = window_width_px*self.px_size
 		self.viewport_height = window_height_px*self.px_size
@@ -179,6 +188,7 @@ font = pygame.font.SysFont("LiberationMono-Regular", 30)
 
 BLACK = pygame.Color(0,0,0, 255)
 WHITE = pygame.Color(255, 255, 255, 255)
+GRAY = pygame.Color(100, 100, 100, 255)
 GREEN = pygame.Color(0, 255, 0, 255)
 RED = pygame.Color(255, 0, 0, 255)
 BLUE = pygame.Color(0, 0, 255, 255)
@@ -187,46 +197,53 @@ W = pygame.display.set_mode((window_width_px, window_height_px))
 S = pygame.Surface((window_width_px, window_height_px), pygame.SRCALPHA)
 
 
-overlay_render_period_ms = 500
-overlay_render_ts = pygame.time.get_ticks()
-overlay_text = ''
 
-def render_ball(ball, color):
-	pygame.draw.circle(S, RED, model.get_point_pos_in_viewport(ball.pos), ball.r, 0)
+def render_ball(surface, ball, color):
+	pygame.draw.circle(surface, color, model.get_point_pos_in_viewport(ball.pos), int(ball.r * initial_px_size / model.px_size), 0)
 	if len(ball.path) > 1:
-		pygame.draw.aalines(S, color, False, [model.get_point_pos_in_viewport(p) for p in ball.path], 1)
+		pygame.draw.lines(surface, WHITE, False, [model.get_point_pos_in_viewport(p) for p in ball.path], 1)
 
-
-def render():
-	global overlay_render_ts
-	global overlay_text
-	S.fill(BLACK)
-
+def render_grid(surface):
 	left_border_x = model.viewport_center.x - window_width_px/2*model.px_size
 	line_x = math.ceil(left_border_x/model.grid_size)*model.grid_size
 	while line_x < (left_border_x + window_width_px*model.px_size):
 		line_x_px = (line_x - model.viewport_center.x)/model.px_size + window_width_px/2
-		pygame.draw.line(S, WHITE, (line_x_px, 0), (line_x_px, window_height_px))
+		pygame.draw.line(surface, GRAY, (line_x_px, 0), (line_x_px, window_height_px))
 		line_x += model.grid_size
-
 
 	top_border_y = model.viewport_center.y - window_height_px/2*model.px_size
 	line_y = math.ceil(top_border_y/model.grid_size)*model.grid_size
 	while line_y < (top_border_y + window_height_px*model.px_size):
 		line_y_px = -(line_y - model.viewport_center.y)/model.px_size + window_height_px/2
-		pygame.draw.line(S, WHITE, (0, line_y_px), (window_width_px, line_y_px))
+		pygame.draw.line(surface, GRAY, (0, line_y_px), (window_width_px, line_y_px))
 		line_y += model.grid_size
 
-	render_ball(model.body_0, RED)
-	render_ball(model.body_1, BLUE)
 
-	W.blit(S, (0, 0))
+overlay_render_period_ms = 500
+overlay_render_ts = pygame.time.get_ticks()
+overlay_text = ''
 
+def render_overlay():
+	global overlay_render_ts
+	global overlay_text
 	if pygame.time.get_ticks() - overlay_render_ts > overlay_render_period_ms:
 		overlay_render_ts = pygame.time.get_ticks()
 		overlay_text = "%.1f fps" % fpsClock.get_fps()
 	overlay_label = font.render(overlay_text, 1, GREEN)
 	W.blit(overlay_label, (0, 0))
+
+
+def render():
+	S.fill(BLACK)
+
+	render_grid(S)
+
+	render_ball(S, model.body_0, RED)
+	render_ball(S, model.body_1, BLUE)
+
+	W.blit(S, (0, 0))
+
+	render_overlay()
 
 	pygame.display.update()
 
