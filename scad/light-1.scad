@@ -36,10 +36,14 @@ module cyl (x, y, h)
 
 D1=80;
 D2=70;
-d=5;
+d=8;
 h1=50;
 h2=20;
 a=atan((h1-h2)/D1);
+
+Dg1=76;
+Dg2=64;
+hg=5;
 
 difference() {
     union() {
@@ -50,8 +54,12 @@ difference() {
             
             translate([0, 0, h1 - (h1-h2)/2])
             rotate([0, a, 0])
-            translate([0, 0, h1])
-                cube([2*D1, 2*D2, 2*h1], center=true);
+                union() {
+                    translate([0,0,-hg])
+                        cyl(Dg1, Dg2, hg*2);
+                    translate([0, 0, h1])
+                        cube([2*D1, 2*D2, 2*h1], center=true);
+                }
         }
     }
 
