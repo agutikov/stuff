@@ -1,0 +1,13 @@
+diff --git a/libstdc++-v3/libsupc++/eh_personality.cc b/libstdc++-v3/libsupc++/eh_personality.cc
+index 5c381d9..b6a3194 100644
+--- a/libstdc++-v3/libsupc++/eh_personality.cc
++++ b/libstdc++-v3/libsupc++/eh_personality.cc
+@@ -513,7 +513,7 @@ PERSONALITY_FUNCTION (int version,
+   // If ip is not present in the table, call terminate.  This is for
+   // a destructor inside a cleanup, or a library routine the compiler
+   // was not expecting to throw.
+-  found_type = found_terminate;
++  found_type = found_nothing;
+   goto do_something;
+ 
+  found_something:
