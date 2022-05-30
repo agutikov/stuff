@@ -7,10 +7,10 @@
 #include <iostream>
 
 
-template<class... Ts> struct visitor : Ts... { using Ts::operator()...; };
+template<class... Ts> struct overload : Ts... { using Ts::operator()...; };
 #if __cplusplus < 202000L
     // explicit deduction guide (not needed as of C++20)
-    template<class... Ts> visitor(Ts...) -> visitor<Ts...>;
+    template<class... Ts> overload(Ts...) -> overload<Ts...>;
 #endif
 
 
@@ -25,7 +25,7 @@ typedef std::variant<A, B> Value;
 
 const char* name(const Value& v)
 {
-    return std::visit(visitor{
+    return std::visit(overload{
         [](const A&) { return "A"; },
         [](const B&) { return "B"; }
     }, v);
@@ -37,7 +37,7 @@ std::ostream& operator<<(std::ostream& os, const Value& v)
     return os;
 }
 
-void test_value()
+void show_value()
 {
     Value v = A{};
 
@@ -69,7 +69,7 @@ typedef std::variant<Batch_A, Batch_B> Batch;
 
 Batch NewBatch(const Value& v)
 {
-    return std::visit(visitor{
+    return std::visit(overload{
         [](const auto& v) -> Batch { return std::vector{v}; }
     }, v);
 }
@@ -87,7 +87,7 @@ Batch NewBatch(std::initializer_list<T>&& values)
 std::ostream& operator<<(std::ostream& os, const Batch& batch)
 {
     os << "[";
-    std::visit(visitor{
+    std::visit(overload{
         [&os](const auto& b) {
             for (const auto& v : b) {
                 os << v;
@@ -104,7 +104,7 @@ std::ostream& operator<<(std::ostream& os, const Batch& batch)
 
 
 
-void test_batch()
+void show_batch()
 {
     Values values{ A{}, B{}, A{}, B{} };
     std::cout << values << std::endl;
@@ -132,6 +132,7 @@ std::ostream& operator<<(std::ostream& os, const Batches& batches)
     return os;
 }
 
+
 Batches packB(const Values& values)
 {
     Batches batches;
@@ -142,7 +143,7 @@ Batches packB(const Values& values)
             continue;
         }
 
-        std::visit(visitor{
+        std::visit(overload{
             [](Batch_A& last, const A& value) {
                 last.emplace_back(value);
             },
@@ -161,7 +162,7 @@ Batches packB(const Values& values)
     return batches;
 }
 
-void test_packB()
+void show_packB()
 {
     Values values{ A{}, B{}, A{}, A{}, A{}, B{}, B{}, A{} };
 
@@ -169,6 +170,8 @@ void test_packB()
 
     std::cout << values << " -> " << batches << std::endl;
 }
+
+
 
 
 // TODO: How to make a sum of variants type?
@@ -183,7 +186,7 @@ std::ostream& operator<<(std::ostream& os, const BatchValues& batches)
 {
     os << "{";
     for (const auto& bv : batches) {
-        std::visit(visitor{
+        std::visit(overload{
             [&os](const auto& bv) {
                 os << bv;
             }
@@ -203,9 +206,9 @@ BatchValues packBV(const Values& values)
             continue;
         }
 
-        std::visit(visitor{
+        std::visit(overload{
             [&bv, &value](const Value& last) {
-                std::visit(visitor{
+                std::visit(overload{
                     [&bv](const A& last, const A& value) {
                         auto batch = Batch_A{last, value};
                         bv.pop_back(); // last became invalid
@@ -225,7 +228,7 @@ BatchValues packBV(const Values& values)
                 }, last, value);
             },
             [&bv, &value](Batch& last) {
-                std::visit(visitor{
+                std::visit(overload{
                     [&bv](Batch_A& last, const A& value) {
                         last.emplace_back(value);
                     },
@@ -246,7 +249,7 @@ BatchValues packBV(const Values& values)
     return bv;
 }
 
-void test_packBV()
+void show_packBV()
 {
     Values values{ A{}, B{}, A{}, A{}, A{}, B{}, B{}, A{} };
 
@@ -256,12 +259,102 @@ void test_packBV()
 }
 
 
+
+struct BatchPacker
+{
+    Batches batches;
+
+    template<typename T>
+    void operator()(std::vector<T>& last, const T& value)
+    {
+        last.emplace_back(value);
+    }
+
+    void operator()(const auto&, const auto& value)
+    {
+        batches.emplace_back(NewBatch(value));
+    }
+
+    void pack(const Values& values)
+    {
+        for (const auto& v : values) {
+            if (batches.empty()) {
+                batches.emplace_back(NewBatch(v));
+                continue;
+            }
+
+            std::visit(*this, batches.back(), v);
+        }
+    }
+};
+
+
+void show_packer(auto&& packer)
+{
+    Values values_1{ A{}, B{}, A{}};
+
+    packer.pack(values_1);
+
+    Values values_2{ A{}, A{}, B{}, B{}, A{} };
+
+    packer.pack(values_2);
+
+    std::cout << values_1 << " + " << values_2 << " -> " << packer.batches << std::endl;
+}
+
+
+struct BVPacker
+{
+    BatchValues batches;
+
+    template<typename T>
+    void operator()(std::vector<T>& last, const T& value)
+    {
+        last.emplace_back(value);
+    }
+
+    template<typename T>
+    void operator()(const T& last, const T& value)
+    {
+        auto batch = std::vector{last, value};
+        batches.pop_back(); // last became invalid
+        batches.emplace_back(batch);
+    }
+
+    void operator()(const auto&, const auto& value)
+    {
+        batches.emplace_back(value);
+    }
+
+    void pack(const Values& values)
+    {
+        for (const auto& v : values) {
+            if (batches.empty()) {
+                batches.emplace_back(v);
+                continue;
+            }
+
+            std::visit(overload{
+                [&v, this](auto& last) {
+                    std::visit(*this, last, v);
+                }
+            }, batches.back());
+        }
+    }
+};
+
+
+
 int main()
 {
-    test_value();
-    test_batch();
-    test_packB();
-    test_packBV();
+    show_value();
+    show_batch();
+
+    show_packB();
+    show_packBV();
+
+    show_packer(BatchPacker{});
+    show_packer(BVPacker{});
 
     return 0;
 }
