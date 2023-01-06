@@ -10,6 +10,7 @@
 #include <sstream>
 #include <deque>
 #include <queue>
+#include <iomanip>
 
 
 enum class Suit : uint8_t
@@ -128,6 +129,7 @@ bool operator<(const Card& lhs, const Card& rhs)
     }
 }
 
+
 bool operator==(const Card& lhs, const Card& rhs)
 {
     return lhs.suit == rhs.suit && lhs.value == rhs.value;
@@ -206,6 +208,16 @@ std::ostream& operator<<(std::ostream& os, Value value)
 std::ostream& operator<<(std::ostream& os, const Card& card)
 {
     os << card.value << card.suit;
+    return os;
+}
+
+
+
+std::ostream& operator << (std::ostream& os, const std::vector<Card>& cards)
+{
+    for (const auto& card : cards) {
+        os << card << " ";
+    }
     return os;
 }
 
@@ -390,26 +402,34 @@ struct HandValue
     std::vector<Value> values;
 };
 
+std::ostream& operator<<(std::ostream& os, const std::vector<Value>& value)
+{
+    for (const auto& v : value) {
+        os << v;
+    }
+    return os;
+}
+
 std::ostream& operator<<(std::ostream& os, HandType type)
 {
     switch (type) {
         case HandType::HighCard:
-            os << "h";
+            os << " h";
             break;
         case HandType::Pair:
-            os << "p";
+            os << " p";
             break;
         case HandType::TwoPair:
             os << "2p";
             break;
         case HandType::ThreeOfAKind:
-            os << "3";
+            os << " 3";
             break;
         case HandType::Straight:
-            os << "S";
+            os << " S";
             break;
         case HandType::Flush:
-            os << "F";
+            os << " F";
             break;
         case HandType::FullHouse:
             os << "FH";
@@ -429,148 +449,158 @@ std::ostream& operator<<(std::ostream& os, HandType type)
 
 std::ostream& operator<<(std::ostream& os, const HandValue& handValue)
 {
-    os << handValue.type << " ";
-    for (const auto& value : handValue.values) {
-        os << value;
-    }
+    os << handValue.type << " " << handValue.values;
     return os;
 }
+
+
 
 HandValue EvaluateCards(const std::vector<Card>& cards)
 {
     std::map<Suit, std::set<Value>> suitMap;
-    std::map<Value, std::set<Suit>> valueMap;
+    std::array<size_t, 13> valueCounts = { 0 };
     std::set<Value> valueSet;
 
     for (const auto& card : cards) {
         suitMap[card.suit].insert(card.value);
-        valueMap[card.value].insert(card.suit);
+        valueCounts[static_cast<size_t>(card.value)]++;
         valueSet.insert(card.value);
     }
+    std::vector<Value> values(valueSet.begin(), valueSet.end());
+    std::sort(values.begin(), values.end(), std::greater<Value>());
 
-    bool hasFourOfAKind = false;
-    Value fourOfAKindValue = Value::Two;
-    bool hasThreeOfAKind = false;
-    Value threeOfAKindValue = Value::Two;
-    std::set<Value> pairValues;
-    bool hasFlush = false;
-    bool hasStraight = false;
-    std::vector<Value> handValues; // resulting values from highest to lowest
+    std::optional<Value> fourOfAKindValue;
+    std::optional<Value> threeOfAKindValue;
+    std::vector<Value> pairValues;
+    std::vector<Value> flushValues;
+    std::vector<Value> straightValues;
+    std::vector<Value> straightFlushValues;
 
     // Count Four of a Kind, Three of a Kind, Pairs, and Kicker
-    for (const auto value : valueSet) {
-        if (valueMap[value].size() == 4) {
-            hasFourOfAKind = true;
+    for (const auto value : values) {
+        size_t i = static_cast<size_t>(value);
+        size_t count = valueCounts[i];
+        if (count == 4) {
             fourOfAKindValue = value;
-        } else if (valueMap[value].size() == 3) {
-            hasThreeOfAKind = true;
-            threeOfAKindValue = value;
-        } else if (valueMap[value].size() == 2) {
-            pairValues.insert(value);
+        } else if (count == 3) {
+            if (threeOfAKindValue) {
+                pairValues.push_back(value);
+            } else {
+                threeOfAKindValue = value;
+            }
+        } else if (count == 2) {
+            pairValues.push_back(value);
         }
     }
 
     // Check for Flush
-    for (const auto& suit : suitMap) {
-        if (suit.second.size() == 5) {
-            hasFlush = true;
-            for (const auto& value : suit.second) {
-                handValues.push_back(value);
+    for (const auto& [suit, suit_values] : suitMap) {
+        if (suit_values.size() >= 5) {
+            for (const auto& value : suit_values) {
+                flushValues.push_back(value);
             }
-            std::sort(handValues.begin(), handValues.end(), std::greater<Value>());
+            std::sort(flushValues.begin(), flushValues.end(), std::greater<Value>());
             break;
         }
     }
 
     // Check for Straight
-    if (valueSet.size() >= 5) {
-        std::vector<Value> values(valueSet.begin(), valueSet.end());
-        std::sort(values.begin(), values.end(), std::greater<Value>());
-        bool hasAce = valueSet.find(Value::Ace) != valueSet.end();
-        int numConsecutive = 0;
-        for (size_t i = 0; i < values.size(); ++i) {
-            if (i == 0 || values[i] == values[i-1] + 1) {
+    if (values.size() >= 5) {
+        int numConsecutive = 1;
+        for (size_t i = 0; i < values.size() - 1; ++i) {
+            if (values[i] == values[i+1] + 1) {
                 ++numConsecutive;
             } else {
                 numConsecutive = 1;
             }
             if (numConsecutive == 5) {
-                hasStraight = true;
-                for (size_t j = i; j > i - 5; --j) {
-                    handValues.push_back(values[j]);
-                }
+                straightValues = {values[i-3], values[i-2], values[i-1], values[i], values[i+1]};
                 break;
-            } else if (hasAce && numConsecutive == 4 && values[i] == Value::Five) {
-                hasStraight = true;
-                handValues = {Value::Five, Value::Four, Value::Three, Value::Two, Value::Ace};
+            } else if (numConsecutive == 4 && values[i+1] == Value::Two && values[0] == Value::Ace) {
+                straightValues = {Value::Five, Value::Four, Value::Three, Value::Two, Value::Ace};
                 break;
             }
         }
     }
 
-    // Evaluate Hand
-    HandType handType = HandType::HighCard;
-    if (hasStraight && hasFlush) {
-        if (valueSet.find(Value::Ace) != valueSet.end()) {
-            handType = HandType::RoyalFlush;
-        } else {
-            handType = HandType::StraightFlush;
+    // Check for Straight Flush
+    if (flushValues.size() >= 5 && straightValues.size() >= 5) {
+        int numConsecutive = 1;
+        for (size_t i = 0; i < flushValues.size() - 1; ++i) {
+            if (flushValues[i] == flushValues[i+1] + 1) {
+                ++numConsecutive;
+            } else {
+                numConsecutive = 1;
+            }
+            if (numConsecutive == 5) {
+                straightFlushValues = {flushValues[i-3], flushValues[i-2], flushValues[i-1], flushValues[i], flushValues[i+1]};
+            } else if (numConsecutive == 4 && flushValues[i+1] == Value::Two && flushValues[0] == Value::Ace) {
+                straightFlushValues = {Value::Five, Value::Four, Value::Three, Value::Two, Value::Ace};
+            }
         }
-    } else if (hasFourOfAKind) {
-        handType = HandType::FourOfAKind;
-        handValues = {fourOfAKindValue, fourOfAKindValue, fourOfAKindValue, fourOfAKindValue};
-        valueSet.erase(fourOfAKindValue);
-        handValues.push_back(*valueSet.rbegin());
-    } else if (hasThreeOfAKind && pairValues.size() >= 1) {
-        handType = HandType::FullHouse;
-        handValues = {threeOfAKindValue, threeOfAKindValue, threeOfAKindValue};
-        handValues.push_back(*pairValues.rbegin());
-        handValues.push_back(*pairValues.rbegin());
-    } else if (hasFlush) {
-        handType = HandType::Flush;
-    } else if (hasStraight) {
-        handType = HandType::Straight;
-    } else if (hasThreeOfAKind) {
-        handType = HandType::ThreeOfAKind;
-        handValues = {threeOfAKindValue, threeOfAKindValue, threeOfAKindValue};
-        valueSet.erase(threeOfAKindValue);
-        handValues.push_back(*valueSet.rbegin());
-        valueSet.erase(*valueSet.rbegin());
-        handValues.push_back(*valueSet.rbegin());
-    } else if (pairValues.size() >= 2) {
-        handType = HandType::TwoPair;
-        handValues = {*pairValues.rbegin(), *pairValues.rbegin()};
-        valueSet.erase(*pairValues.rbegin());
-        pairValues.erase(*pairValues.rbegin());
-        handValues.push_back(*pairValues.rbegin());
-        handValues.push_back(*pairValues.rbegin());
-        valueSet.erase(*pairValues.rbegin());
-        pairValues.erase(*pairValues.rbegin());
-        handValues.push_back(*valueSet.rbegin());
-    } else if (pairValues.size() == 1) {
-        handType = HandType::Pair;
-        handValues = {*pairValues.rbegin(), *pairValues.rbegin()};
-        valueSet.erase(*pairValues.rbegin());
-        pairValues.erase(*pairValues.rbegin());
-        handValues.push_back(*valueSet.rbegin());
-        valueSet.erase(*valueSet.rbegin());
-        handValues.push_back(*valueSet.rbegin());
-        valueSet.erase(*valueSet.rbegin());
-        handValues.push_back(*valueSet.rbegin());
-    } else {
-        handType = HandType::HighCard;
-        handValues = {*valueSet.rbegin()};
-        valueSet.erase(*valueSet.rbegin());
-        handValues.push_back(*valueSet.rbegin());
-        valueSet.erase(*valueSet.rbegin());
-        handValues.push_back(*valueSet.rbegin());
-        valueSet.erase(*valueSet.rbegin());
-        handValues.push_back(*valueSet.rbegin());
-        valueSet.erase(*valueSet.rbegin());
-        handValues.push_back(*valueSet.rbegin());
     }
 
-    return {handType, handValues};
+    // Resize Flush Values and Straight Values
+    if (flushValues.size() > 5) {
+        flushValues.resize(5);
+    }
+
+    // Evaluate Hand
+    std::vector<Value> handValues;
+    if (straightFlushValues.size() == 5) {
+        if (straightFlushValues[0] == Value::Ace) {
+            return {HandType::RoyalFlush, straightFlushValues};
+        } else {
+            return {HandType::StraightFlush, straightFlushValues};
+        }
+    } else if (fourOfAKindValue.has_value()) {
+        handValues = {*fourOfAKindValue, *fourOfAKindValue, *fourOfAKindValue, *fourOfAKindValue};
+        for (const auto& value : values) {
+            if (value != fourOfAKindValue) {
+                handValues.push_back(value);
+                break;
+            }
+        }
+        return {HandType::FourOfAKind, handValues};
+    } else if (threeOfAKindValue && pairValues.size() >= 1) {
+        return {HandType::FullHouse, {*threeOfAKindValue, *threeOfAKindValue, *threeOfAKindValue, pairValues[0], pairValues[0]}};
+    } else if (flushValues.size() == 5) {
+        return {HandType::Flush, flushValues};
+    } else if (straightValues.size() == 5) {
+        return {HandType::Straight, straightValues};
+    } else if (threeOfAKindValue) {
+        handValues = {*threeOfAKindValue, *threeOfAKindValue, *threeOfAKindValue};
+        size_t i = 0;
+        while (handValues.size() < 5 && i < values.size()) {
+            if (values[i] != *threeOfAKindValue) {
+                handValues.push_back(values[i]);
+            }
+            i++;
+        }
+        return {HandType::ThreeOfAKind, handValues};
+    } else if (pairValues.size() >= 2) {
+        handValues = {pairValues[0], pairValues[0], pairValues[1], pairValues[1]};
+        size_t i = 0;
+        while (handValues.size() < 5 && i < values.size()) {
+            if (values[i] != pairValues[0] && values[i] != pairValues[1]) {
+                handValues.push_back(values[i]);
+            }
+            i++;
+        }
+        return {HandType::TwoPair, handValues};
+    } else if (pairValues.size() == 1) {
+        handValues = {*pairValues.rbegin(), *pairValues.rbegin()};
+        size_t i = 0;
+        while (handValues.size() < 5 && i < values.size()) {
+            if (values[i] != pairValues[0] && values[i] != pairValues[1]) {
+                handValues.push_back(values[i]);
+            }
+            i++;
+        }
+        return {HandType::Pair, handValues};
+    } else {
+        return {HandType::HighCard, {values[0], values[1], values[2], values[3], values[4]}};
+    }
 }
 
 HandValue EvaluateHand(const Hand& hand, const Table& table)
@@ -712,8 +742,9 @@ std::ostream& operator<<(std::ostream& os, const Stats& stats)
 {
     os << "Win: " << 100.0 * (double)stats.win / stats.total << "%, "
        << "Draw: " << 100.0 * (double)stats.draw / stats.total << "%, "
-       << "Fail: " << 100.0 * (double)(stats.total - stats.win - stats.draw) / stats.total << "%, "
-       << "count=" << stats.total;
+       << "Fail: " << 100.0 * (double)(stats.total - stats.win - stats.draw) / stats.total << "%"
+      // << ", count=" << stats.total
+    ;
     return os;
 }
 
@@ -839,7 +870,7 @@ struct OptDeal
         return deal;
     }
 
-    Stats Evaluate() const
+    Stats Equity() const
     {
         if (river) {
             return bruteforceRiver(hand, flop, *turn, *river);
@@ -868,7 +899,7 @@ void calc_deal(const std::string& line)
 {
     OptDeal deal = OptDeal::FromString(line);
 
-    Stats stats = deal.Evaluate();
+    Stats stats = deal.Equity();
 
     std::cout << deal << " : " << stats << std::endl;
 }
@@ -886,8 +917,14 @@ void calc_loop()
 std::vector<Card> ParseCards(const std::string& str)
 {
     std::vector<Card> cards;
-    for (int i = 0; i < str.size(); i += 2) {
+    int i = 0;
+    while (i < str.size()) {
+        if (str[i] == ' ') {
+            ++i;
+            continue;
+        }
         cards.push_back(Card::FromString(str.substr(i, 2)));
+        i += 2;
     }
     return cards;
 }
@@ -985,23 +1022,88 @@ struct CardsGenerator : public CombinationGenerator
 };
 
 
+struct HandStats
+{
+    std::array<size_t, 10> stats;
+    size_t total = 0;
 
-void BruteForceLoop()
+    HandStats()
+    {
+        std::fill(stats.begin(), stats.end(), 0);
+    }
+
+    void Add(HandType hand_type)
+    {
+        stats[int(hand_type)]++;
+        total++;
+    }
+
+    static constexpr std::array<size_t, 10> required_stats = {
+        23'294'460,
+        58'627'800,
+        31'433'400,
+         6'461'620,
+         6'180'020,
+         4'047'644,
+         3'473'184,
+           224'848,
+            37'260,
+             4'324
+    };
+
+    void Verify()
+    {
+        for (int i = 9; i >= 0; --i) {
+            if (stats[i] != required_stats[i]) {
+                std::cout << "Error: " << HandType(i) << " " << stats[i] << " != " << required_stats[i] << std::endl;
+            } else {
+                std::cout << "OK: " << HandType(i) << " " << stats[i] << " == " << required_stats[i] << std::endl;
+            }
+        }
+    }
+};
+
+std::ostream& operator << (std::ostream& os, const HandStats& stats)
+{
+    for(int i = 9; i >= 0; --i) {
+        os << std::setw(5) << HandType(i) << ": "
+            << std::setw(8) << stats.stats[i] << "   "
+            << 100.0 * double(stats.stats[i]) / stats.total << "%"
+            << std::endl;
+    }
+    std::cout << "Deals: " << std::setw(8) << stats.total << std::endl;
+    return os;
+}
+
+void EvalAllDeals()
 {
     CardsGenerator gen(7);
 
+    size_t all_deals_count = 0;
+    HandStats hand_stats;
+
     while (true) {
         auto cards = gen.next();
+
+        if (!cards.empty()) {
+            all_deals_count++;
+
+            auto hand_value = EvaluateCards(cards);
+
+            hand_stats.Add(hand_value.type);
+        }
+
+        if (all_deals_count % 1000000 == 0 || cards.empty()) {
+            std::cout << "\n=======================================" << std::endl;
+            std::cout << hand_stats << std::endl << std::endl;
+        }
+
         if (cards.empty()) {
             break;
         }
-
-        auto hand_value = EvaluateCards(cards);
-        for (int i = 0; i < 7; ++i) {
-            std::cout << cards[i];
-        }
-        std::cout << " : " << hand_value << std::endl;
     }
+
+    hand_stats.Verify();
 }
 
 OptDeal RandomDeal(bool turn = true, bool river = true)
@@ -1022,12 +1124,43 @@ OptDeal RandomDeal(bool turn = true, bool river = true)
     return deal;
 }
 
-void RandomDealEvalLoop()
+void RandomDealEquityLoop(bool turn = true, bool river = true)
 {
     while (true) {
-        auto deal = RandomDeal(true, false);
-        auto stats = deal.Evaluate();
+        auto deal = RandomDeal(turn, river);
+        auto stats = deal.Equity();
         std::cout << deal << " : " << stats << std::endl;
+    }
+}
+
+
+
+void TestEval()
+{
+    static const std::vector<std::pair<std::string, std::string>> tests = {
+        {"AsKs QsJsTs Ah Kh", "RF AKQJT"},
+        {"5d2h Kh9sQd 9h Kd", "2p KK99Q"},
+        {"4h6h 4c4dKc 9c Ts", " 3 444KT"},
+        {"9hKc Jd7sKs 9c Kh", "FH KKK99"},
+        {"3cJd 7h8d6d Qc 9h", " h QJ987"},
+        {"2d7c JcQdAd 6c 6s", " p 66AQJ"},
+        {"8c8d 4d2s5d 8s 7d", " 3 88875"},
+        {"6dJc 6s2hAd Tc 2c", "2p 6622A"},
+        {"7cTc 5d2c3h Ah 6s", " h AT765"},
+        {"Jh8h 5h2c2h Kh 9h", " F KJ985"},
+        {"Jc9s 7c4s5h Ts 8h", " S JT987"},
+        {"Jc9s 3c4s5h As 2h", " S 5432A"},
+    };
+
+    for (const auto& [deal, expected] : tests) {
+        auto cards = ParseCards(deal);
+        auto hand_value = EvaluateCards(cards);
+        std::string hand_value_str = to_string(hand_value);
+        if (hand_value_str != expected) {
+            std::cout << "FAIL: " << deal << " : " << hand_value_str << " != " << expected << std::endl;
+        } else {
+            std::cout << "OK: " << deal << " : " << hand_value_str << std::endl;
+        }
     }
 }
 
@@ -1043,10 +1176,13 @@ int main(int argc, const char* argv[])
     if (!line.empty()) {
         calc_deal(line);
     } else {
-        //BruteForceLoop();
-        RandomDealEvalLoop();
-    }
+        EvalAllDeals();
 
+        // RandomDealEquityLoop(false, false);
+
+        // TestEval();
+    }
 
     return 0;
 }
+
