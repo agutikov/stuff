@@ -11,7 +11,17 @@
 #include <deque>
 #include <queue>
 #include <iomanip>
+#include <chrono>
+#include <unordered_map>
+#include "gtl/include/gtl/phmap.hpp"
+#include <unordered_set>
 
+
+#define ENABLE_HAND_LOOKUP_TABLE 0
+
+
+
+using namespace std::chrono_literals;
 
 enum class Suit : uint8_t
 {
@@ -38,59 +48,83 @@ enum class Value : uint8_t
     Ace
 };
 
-bool operator<(Value lhs, Value rhs)
+Value& operator++(Value& value)
+{
+    value = static_cast<Value>(static_cast<int>(value) + 1);
+    return value;
+}
+
+Value& operator--(Value& value)
+{
+    value = static_cast<Value>(static_cast<int>(value) - 1);
+    return value;
+}
+
+constexpr bool operator<(Value lhs, Value rhs)
 {
     return int(lhs) < int(rhs);
 }
 
-bool operator>(Value lhs, Value rhs)
+constexpr bool operator>(Value lhs, Value rhs)
 {
     return int(lhs) > int(rhs);
 }
 
-bool operator<=(Value lhs, Value rhs)
+constexpr bool operator<=(Value lhs, Value rhs)
 {
     return int(lhs) <= int(rhs);
 }
 
-bool operator>=(Value lhs, Value rhs)
+constexpr bool operator>=(Value lhs, Value rhs)
 {
     return int(lhs) >= int(rhs);
 }
 
-bool operator==(Value lhs, Value rhs)
+constexpr bool operator==(Value lhs, Value rhs)
 {
     return int(lhs) == int(rhs);
 }
 
-bool operator==(Value lhs, int rhs)
+constexpr bool operator==(Value lhs, int rhs)
 {
     return int(lhs) == rhs;
 }
 
-bool operator!=(Value lhs, Value rhs)
+constexpr bool operator!=(Value lhs, Value rhs)
 {
     return int(lhs) != int(rhs);
 }
 
-int operator+(Value value, int i)
+constexpr int operator+(Value value, int i)
 {
     return int(value) + i;
 }
 
+constexpr int operator-(Value value, int i)
+{
+    return int(value) - i;
+}
+
 struct Card
 {
-    Value value;
-    Suit suit;
+    int8_t index = 0; // 0-51
 
-    static Card FromIndex(int index)
+    Card() = default;
+
+    Card(int8_t index) : index(index) {}
+
+    Value value() const
     {
-        return { static_cast<Value>(index % 13), static_cast<Suit>(index / 13) };
+        return static_cast<Value>(index % 13);
+    }
+    Suit suit() const
+    {
+        return static_cast<Suit>(index / 13);
     }
 
-    int GetIndex() const
+    uint64_t GetBitmask() const
     {
-        return int(suit) * 13 + int(value);
+        return 1ULL << (index % 13 + (index / 13) * 16);
     }
 
     static Card FromString(const std::string& s)
@@ -116,23 +150,40 @@ struct Card
             { 'd', Suit::DIAMONDS },
             { 'c', Suit::CLUBS }
         };
-        return { valueMap.at(s[0]), suitMap.at(s[1]) };
+        auto val_it = valueMap.find(s[0]);
+        auto suit_it = suitMap.find(s[1]);
+        if (val_it == valueMap.end() || suit_it == suitMap.end()) {
+            throw std::runtime_error("Invalid card string: " + s);
+        }
+        return Card(int(val_it->second) + int(suit_it->second) * 13);
+    }
+
+    Card& operator++()
+    {
+        ++index;
+        return *this;
+    }
+
+    Card& operator--()
+    {
+        --index;
+        return *this;
     }
 };
 
 bool operator<(const Card& lhs, const Card& rhs)
 {
-    if (lhs.value == rhs.value) {
-        return lhs.suit < rhs.suit;
+    if (lhs.value() == rhs.value()) {
+        return lhs.suit() < rhs.suit();
     } else {
-        return lhs.value < rhs.value;
+        return lhs.value() < rhs.value();
     }
 }
 
 
 bool operator==(const Card& lhs, const Card& rhs)
 {
-    return lhs.suit == rhs.suit && lhs.value == rhs.value;
+    return lhs.suit() == rhs.suit() && lhs.value() == rhs.value();
 }
 
 bool operator!=(const Card& lhs, const Card& rhs)
@@ -207,7 +258,7 @@ std::ostream& operator<<(std::ostream& os, Value value)
 
 std::ostream& operator<<(std::ostream& os, const Card& card)
 {
-    os << card.value << card.suit;
+    os << card.value() << card.suit();
     return os;
 }
 
@@ -230,10 +281,8 @@ struct Deck
 
     Deck()
     {
-        for (int i = int(Suit::SPADES); i <= int(Suit::CLUBS); ++i) {
-            for (int j = int(Value::Two); j <= int(Value::Ace); ++j) {
-                cards.insert({ static_cast<Value>(j), static_cast<Suit>(i) });
-            }
+        for (int i = 0; i < 52; ++i) {
+            cards.insert(Card(i));
         }
     }
 
@@ -276,77 +325,16 @@ struct Hand
     }
 };
 
-struct Flop
-{
-    std::array<Card, 3> cards;
-
-    static Flop FromString(const std::string& s)
-    {
-        return { Card::FromString(s.substr(0, 2)), Card::FromString(s.substr(2, 2)), Card::FromString(s.substr(4, 2)) };
-    }
-};
-
-struct Turn
-{
-    Card card;
-
-    static Turn FromString(const std::string& s)
-    {
-        return { Card::FromString(s) };
-    }
-};
-
-struct River
-{
-    Card card;
-
-    static River FromString(const std::string& s)
-    {
-        return { Card::FromString(s) };
-    }
-};
-
-struct Table
-{
-    Flop flop;
-    Turn turn;
-    River river;
-};
 
 struct Deal
 {
     std::vector<Hand> hands;
-    Table table;
+    std::vector<Card> board;
 };
-
-
-std::ostream& operator<<(std::ostream& os, const Flop& flop)
-{
-    os << flop.cards[0] << flop.cards[1] << flop.cards[2];
-    return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const Turn& turn)
-{
-    os << turn.card;
-    return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const River& river)
-{
-    os << river.card;
-    return os;
-}
 
 std::ostream& operator<<(std::ostream& os, const Hand& hand)
 {
     os << hand.cards[0] << hand.cards[1];
-    return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const Table& table)
-{
-    os << table.flop << " " << table.turn << " " << table.river;
     return os;
 }
 
@@ -361,29 +349,299 @@ std::ostream& operator<<(std::ostream& os, const Deck& deck)
 std::ostream& operator<<(std::ostream& os, const Deal& game)
 {
     if (game.hands.size() == 2) {
-        os << "[" << game.hands[0] << "] " << game.table << " [" << game.hands[1] << "] ";
+        os << "[" << game.hands[0] << "] " << game.board << " [" << game.hands[1] << "] ";
         return os;
     }
 
     for (size_t i = 0; i < game.hands.size(); ++i) {
         os << "Hand " << i+1 << ": " << game.hands[i] << "; ";
     }
-    os << "Table: " << game.table;
+    os << "Table: " << game.board;
+    return os;
+}
+
+
+constexpr size_t count_bits_16(uint16_t bits)
+{
+    size_t count = 0;
+    while (bits) {
+        bits &= bits - 1;
+        count++;
+    }
+    return count;
+}
+
+constexpr std::array<size_t, 1 << 13> g_bitcount_table = []() {
+    std::array<size_t, 1 << 13> table;
+    for (size_t i = 0; i < table.size(); ++i) {
+        table[i] = count_bits_16(i);
+    }
+    return table;
+}();
+
+
+size_t CountBits(uint16_t bits)
+{
+    return g_bitcount_table[bits];
+}
+
+struct ValueBitSet
+{
+    uint16_t bits = 0;
+
+    ValueBitSet() = default;
+
+    explicit ValueBitSet(uint16_t bits) : bits(bits) {}
+
+    static constexpr uint16_t ValueMask(Value value)
+    {
+        return 1 << static_cast<uint8_t>(value);
+    }
+    static constexpr uint16_t ALL_VALUES_MASK = 0x1FFF;
+    static constexpr uint16_t StraightMask(Value value)
+    {
+        if (value == Value::Five) {
+            return ValueMask(Value::Five)
+                | ValueMask(Value::Four)
+                | ValueMask(Value::Three)
+                | ValueMask(Value::Two)
+                | ValueMask(Value::Ace);
+        } else {
+            return ValueMask(value)
+                | ValueMask(value) >> 1
+                | ValueMask(value) >> 2
+                | ValueMask(value) >> 3
+                | ValueMask(value) >> 4;
+        }
+    }
+    static constexpr uint16_t ROYAL_STRAIGHT_MASK = 0x1F00;
+    static constexpr uint16_t CIRCLE_STRAIGHT_MASK = 0x100F;
+
+    static ValueBitSet Straight(Value value)
+    {
+        return ValueBitSet(StraightMask(value));
+    }
+
+    bool HasRoyalStraight() const
+    {
+        return (bits & ROYAL_STRAIGHT_MASK) == ROYAL_STRAIGHT_MASK;
+    }
+
+    bool HasCircleStraight() const
+    {
+        return bits == CIRCLE_STRAIGHT_MASK;
+    }
+
+    operator bool() const
+    {
+        return bits != 0;
+    }
+
+    bool HasValue(Value value) const
+    {
+        return bits & ValueMask(value);
+    }
+    bool HasStraight(Value value) const
+    {
+        uint16_t mask = StraightMask(value);
+        return (bits & mask) == mask;
+    }
+    ValueBitSet FindStraight() const
+    {
+        uint16_t mask = StraightMask(Value::Ace);
+        for (uint8_t i = 0; i < 9; ++i) {
+            if ((bits & mask) == mask) {
+                return ValueBitSet(mask);
+            }
+            mask >>= 1;
+        }
+        mask = StraightMask(Value::Five);
+        if ((bits & mask) == mask) {
+            return ValueBitSet(mask);
+        }
+        return {};
+    }
+
+    struct SortedValueList
+    {
+        std::array<Value, 13> values;
+        size_t size = 0;
+    };
+
+    SortedValueList GetSortedValueList() const
+    {
+        SortedValueList list;
+        for (int value = static_cast<int>(Value::Ace); value >= static_cast<int>(Value::Two); --value) {
+            if (bits & ValueMask(static_cast<Value>(value))) {
+                list.values[list.size++] = static_cast<Value>(value);
+            }
+        }
+        return list;
+    }
+
+    template<size_t N>
+    std::array<Value, N> GetHighSortedValueList() const
+    {
+        std::array<Value, N> list;
+        size_t i = 0;
+        for (int value = static_cast<int>(Value::Ace); value >= static_cast<int>(Value::Two); --value) {
+            if (bits & ValueMask(static_cast<Value>(value))) {
+                list[i++] = static_cast<Value>(value);
+            }
+            if (i == N) {
+                break;
+            }
+        }
+        return list;
+    }
+
+    void Add(Value value)
+    {
+        bits |= ValueMask(value);
+    }
+
+    void Remove(Value value)
+    {
+        bits &= ~ValueMask(value);
+    }
+
+    ValueBitSet TrimToSize(size_t size) const
+    {
+        auto list = GetSortedValueList();
+        ValueBitSet result;
+        for (size_t i = 0; i < size; ++i) {
+            result.Add(list.values[i]);
+        }
+        return result;
+    }
+};
+
+std::ostream& operator<<(std::ostream& os, const ValueBitSet& set)
+{
+    for (uint8_t i = 0; i < 13; ++i) {
+        if (set.bits & ValueBitSet::ValueMask(Value{i})) {
+            os << Value{i};
+        }
+    }
+    return os;
+}
+
+struct CardBitSet
+{
+    static_assert(sizeof(ValueBitSet) * 4 == sizeof(uint64_t), "ValueBitSet must be 16 bits");
+
+    union {
+        uint64_t bits;
+        ValueBitSet suits[4];
+        uint16_t _suits[4];
+    } u = {.bits = 0};
+
+    void SortSuits()
+    {
+        std::sort(std::begin(u._suits), std::end(u._suits), std::greater<uint16_t>());
+    }
+
+    int64_t Get52Bits() const
+    {
+        int64_t suit_values[4] = {
+            u.suits[0].bits,
+            u.suits[1].bits,
+            u.suits[2].bits,
+            u.suits[3].bits,
+        };
+        return suit_values[0]
+            | suit_values[1] << (16 - 3)
+            | suit_values[2] << (32 - 6)
+            | suit_values[3] << (48 - 9);
+    }
+
+    static CardBitSet FullDeck()
+    {
+        return CardBitSet{ 0x1FFF1FFF1FFF1FFF };
+    }
+
+    static constexpr uint64_t FourOfAKindMask(Value value)
+    {
+        return uint64_t(ValueBitSet::ValueMask(value))
+            | uint64_t(ValueBitSet::ValueMask(value)) << 16
+            | uint64_t(ValueBitSet::ValueMask(value)) << 32
+            | uint64_t(ValueBitSet::ValueMask(value)) << 48;
+    }
+    static constexpr uint64_t SuitMask(Suit suit)
+    {
+        return 0x1FFF << (static_cast<uint8_t>(suit) * 16);
+    }
+
+    CardBitSet() = default;
+
+    explicit CardBitSet(uint64_t bits) : u{.bits=bits} {}
+
+    CardBitSet(const std::vector<Card>& cards)
+    {
+        for (const auto& card : cards) {
+            AddCard(card);
+        }
+    }
+
+    void AddCard(Card card)
+    {
+        u.bits |= card.GetBitmask();
+    }
+
+    void RemoveCard(Card card)
+    {
+        u.bits &= ~card.GetBitmask();
+    }
+
+    bool HasCard(Card card) const
+    {
+        return u.bits & card.GetBitmask();
+    }
+
+    ValueBitSet GetAllValues() const
+    {
+        return ValueBitSet( u.suits[0].bits | u.suits[1].bits | u.suits[2].bits | u.suits[3].bits );
+    }
+
+    ValueBitSet GetSuitValues(Suit suit) const
+    {
+        return u.suits[static_cast<uint8_t>(suit)];
+    }
+
+    std::array<size_t, 4> GetSuitsCount() const
+    {
+        return {
+            CountBits(u.suits[0].bits),
+            CountBits(u.suits[1].bits),
+            CountBits(u.suits[2].bits),
+            CountBits(u.suits[3].bits)
+        };
+    }
+};
+
+std::ostream& operator<<(std::ostream& os, const CardBitSet& set)
+{
+    for (int8_t i = 0; i < 52; ++i) {
+        Card card{i};
+        if (set.HasCard(card)) {
+            os << card;
+        }
+    }
     return os;
 }
 
 enum class HandType : uint8_t
-{
-    HighCard = 0,
-    Pair,
-    TwoPair,
-    ThreeOfAKind,
-    Straight,
-    Flush,
-    FullHouse,
-    FourOfAKind,
-    StraightFlush,
-    RoyalFlush
+{                  //  size of descriptor
+    HighCard = 0,  //             5 cards
+    Pair,          //     1 + 4 = 5 cards
+    TwoPair,       // 1 + 1 + 1 = 3 cards
+    ThreeOfAKind,  //     1 + 2 = 3 cards
+    Straight,      //             1 cards
+    Flush,         //             5 cards
+    FullHouse,     //     1 + 1 = 2 cards
+    FourOfAKind,   //     1 + 1 = 2 cards
+    StraightFlush, //             1 cards
+    RoyalFlush     //             0 cards
 };
 
 bool operator<(HandType lhs, HandType rhs)
@@ -399,10 +657,55 @@ bool operator>(HandType lhs, HandType rhs)
 struct HandValue
 {
     HandType type;
-    std::vector<Value> values;
+    std::array<Value, 5> values;
+
+    uint32_t Pack() const
+    {
+        uint32_t result = static_cast<uint32_t>(type) << 20
+            | static_cast<uint32_t>(values[0]) << 16
+            | static_cast<uint32_t>(values[1]) << 12
+            | static_cast<uint32_t>(values[2]) << 8
+            | static_cast<uint32_t>(values[3]) << 4
+            | static_cast<uint32_t>(values[4]);
+        return result;
+    }
+
+    uint32_t Hash() const
+    {
+        uint32_t hash = static_cast<uint32_t>(values[4]);
+        hash += static_cast<uint32_t>(values[3]) * 13;
+        hash += static_cast<uint32_t>(values[2]) * 13 * 13;
+        hash += static_cast<uint32_t>(values[1]) * 13 * 13 * 13;
+        hash += static_cast<uint32_t>(values[0]) * 13 * 13 * 13 * 13;
+        hash += static_cast<uint32_t>(type) * 13 * 13 * 13 * 13 * 13;
+        return hash - 213995; // minus min value
+    }
 };
 
+bool operator<(const HandValue& lhs, const HandValue& rhs)
+{
+    return lhs.Pack() < rhs.Pack();
+}
+bool operator>(const HandValue& lhs, const HandValue& rhs)
+{
+    return lhs.Pack() > rhs.Pack();
+}
+
+//std::unordered_map<uint64_t, HandValue> g_hand_lookup_table;
+//google::dense_hash_map<int64_t, HandValue> g_hand_lookup_table;
+gtl::flat_hash_map<int64_t, HandValue, std::hash<int64_t>> g_hand_lookup_table;
+
+
 std::ostream& operator<<(std::ostream& os, const std::vector<Value>& value)
+{
+    for (const auto& v : value) {
+        os << v;
+    }
+    return os;
+}
+
+template<size_t N>
+std::ostream& operator<<(std::ostream& os, const std::array<Value, N>& value)
 {
     for (const auto& v : value) {
         os << v;
@@ -435,7 +738,7 @@ std::ostream& operator<<(std::ostream& os, HandType type)
             os << "FH";
             break;
         case HandType::FourOfAKind:
-            os << "4";
+            os << " 4";
             break;
         case HandType::StraightFlush:
             os << "SF";
@@ -454,179 +757,157 @@ std::ostream& operator<<(std::ostream& os, const HandValue& handValue)
 }
 
 
+size_t g_lookup_hits = 0;
+size_t g_lookup_misses = 0;
 
-HandValue EvaluateCards(const std::vector<Card>& cards)
+HandValue EvaluateCards(const Card* cards, size_t count)
 {
-    std::map<Suit, std::set<Value>> suitMap;
-    std::array<size_t, 13> valueCounts = { 0 };
-    std::set<Value> valueSet;
-
-    for (const auto& card : cards) {
-        suitMap[card.suit].insert(card.value);
-        valueCounts[static_cast<size_t>(card.value)]++;
-        valueSet.insert(card.value);
+    CardBitSet card_bits;
+    for (size_t i = 0; i < count; ++i) {
+        card_bits.AddCard(cards[i]);
     }
-    std::vector<Value> values(valueSet.begin(), valueSet.end());
-    std::sort(values.begin(), values.end(), std::greater<Value>());
 
-    std::optional<Value> fourOfAKindValue;
-    std::optional<Value> threeOfAKindValue;
-    std::vector<Value> pairValues;
-    std::vector<Value> flushValues;
-    std::vector<Value> straightValues;
-    std::vector<Value> straightFlushValues;
+#if ENABLE_HAND_LOOKUP_TABLE
+    card_bits.SortSuits();
+    int64_t key = card_bits.Get52Bits();
 
-    // Count Four of a Kind, Three of a Kind, Pairs, and Kicker
-    for (const auto value : values) {
-        size_t i = static_cast<size_t>(value);
-        size_t count = valueCounts[i];
+    auto it = g_hand_lookup_table.find(key);
+    if (it != g_hand_lookup_table.end()) {
+        g_lookup_hits++;
+        return it->second;
+    }
+    g_lookup_misses++;
+#endif
+
+    std::array<size_t, 13> value_counts = { 0 };
+    for (size_t i = 0; i < count; ++i) {
+        value_counts[static_cast<size_t>(cards[i].value())]++;
+    }
+
+    std::array<size_t, 4> suit_counts = card_bits.GetSuitsCount();
+
+    ValueBitSet value_bits = card_bits.GetAllValues();
+    ValueBitSet::SortedValueList values = value_bits.GetSortedValueList();
+
+    std::optional<Value> three_of_a_kind_value;
+    std::array<Value, 3> pair_values;
+    size_t pair_count = 0;
+    ValueBitSet flush_values;
+    ValueBitSet straight_values;
+    ValueBitSet straight_flush_values;
+
+    // Count Four of a Kind, Three of a Kind and Pairs
+    for (size_t i = 0; i < values.size; ++i) {
+        Value value = values.values[i];
+        size_t count = value_counts[static_cast<size_t>(value)];
         if (count == 4) {
-            fourOfAKindValue = value;
+            ValueBitSet v = value_bits;
+            v.Remove(value);
+            return {HandType::FourOfAKind, {value, value, value, value, v.GetHighSortedValueList<1>()[0]}};
         } else if (count == 3) {
-            if (threeOfAKindValue) {
-                pairValues.push_back(value);
+            if (three_of_a_kind_value) {
+                pair_values[pair_count++] = value;
             } else {
-                threeOfAKindValue = value;
+                three_of_a_kind_value = value;
             }
         } else if (count == 2) {
-            pairValues.push_back(value);
+            pair_values[pair_count++] = value;
         }
     }
 
     // Check for Flush
-    for (const auto& [suit, suit_values] : suitMap) {
-        if (suit_values.size() >= 5) {
-            for (const auto& value : suit_values) {
-                flushValues.push_back(value);
-            }
-            std::sort(flushValues.begin(), flushValues.end(), std::greater<Value>());
+    for (size_t i = 0; i < suit_counts.size(); ++i) {
+        if (suit_counts[i] >= 5) {
+            flush_values = card_bits.GetSuitValues(static_cast<Suit>(i));
             break;
         }
     }
 
     // Check for Straight
-    if (values.size() >= 5) {
-        int numConsecutive = 1;
-        for (size_t i = 0; i < values.size() - 1; ++i) {
-            if (values[i] == values[i+1] + 1) {
-                ++numConsecutive;
-            } else {
-                numConsecutive = 1;
-            }
-            if (numConsecutive == 5) {
-                straightValues = {values[i-3], values[i-2], values[i-1], values[i], values[i+1]};
-                break;
-            } else if (numConsecutive == 4 && values[i+1] == Value::Two && values[0] == Value::Ace) {
-                straightValues = {Value::Five, Value::Four, Value::Three, Value::Two, Value::Ace};
-                break;
-            }
-        }
+    if (values.size >= 5) {
+        straight_values = value_bits.FindStraight();
     }
 
     // Check for Straight Flush
-    if (flushValues.size() >= 5 && straightValues.size() >= 5) {
-        int numConsecutive = 1;
-        for (size_t i = 0; i < flushValues.size() - 1; ++i) {
-            if (flushValues[i] == flushValues[i+1] + 1) {
-                ++numConsecutive;
+    if (straight_values && flush_values) {
+        straight_flush_values = flush_values.FindStraight();
+        if (straight_flush_values) {
+            if (straight_flush_values.HasRoyalStraight()) {
+                return {HandType::RoyalFlush, straight_flush_values.GetHighSortedValueList<5>()};
             } else {
-                numConsecutive = 1;
-            }
-            if (numConsecutive == 5) {
-                straightFlushValues = {flushValues[i-3], flushValues[i-2], flushValues[i-1], flushValues[i], flushValues[i+1]};
-            } else if (numConsecutive == 4 && flushValues[i+1] == Value::Two && flushValues[0] == Value::Ace) {
-                straightFlushValues = {Value::Five, Value::Four, Value::Three, Value::Two, Value::Ace};
+                return {HandType::StraightFlush, straight_flush_values.GetHighSortedValueList<5>()};
             }
         }
     }
 
-    // Resize Flush Values and Straight Values
-    if (flushValues.size() > 5) {
-        flushValues.resize(5);
+    // Trim Flush values to 5
+    if (flush_values) {
+        flush_values = flush_values.TrimToSize(5);
     }
 
     // Evaluate Hand
-    std::vector<Value> handValues;
-    if (straightFlushValues.size() == 5) {
-        if (straightFlushValues[0] == Value::Ace) {
-            return {HandType::RoyalFlush, straightFlushValues};
+    if (three_of_a_kind_value && pair_count >= 1) {
+        return {HandType::FullHouse, {
+            *three_of_a_kind_value, *three_of_a_kind_value, *three_of_a_kind_value,
+            pair_values[0], pair_values[0]
+        }};
+    } else if (flush_values) {
+        return {HandType::Flush, flush_values.GetHighSortedValueList<5>()};
+    } else if (straight_values) {
+        if (straight_values.HasCircleStraight()) {
+            return {HandType::Straight, {Value::Five, Value::Four, Value::Three, Value::Two, Value::Ace}};
         } else {
-            return {HandType::StraightFlush, straightFlushValues};
+            return {HandType::Straight, straight_values.GetHighSortedValueList<5>()};
         }
-    } else if (fourOfAKindValue.has_value()) {
-        handValues = {*fourOfAKindValue, *fourOfAKindValue, *fourOfAKindValue, *fourOfAKindValue};
-        for (const auto& value : values) {
-            if (value != fourOfAKindValue) {
-                handValues.push_back(value);
-                break;
-            }
-        }
-        return {HandType::FourOfAKind, handValues};
-    } else if (threeOfAKindValue && pairValues.size() >= 1) {
-        return {HandType::FullHouse, {*threeOfAKindValue, *threeOfAKindValue, *threeOfAKindValue, pairValues[0], pairValues[0]}};
-    } else if (flushValues.size() == 5) {
-        return {HandType::Flush, flushValues};
-    } else if (straightValues.size() == 5) {
-        return {HandType::Straight, straightValues};
-    } else if (threeOfAKindValue) {
-        handValues = {*threeOfAKindValue, *threeOfAKindValue, *threeOfAKindValue};
-        size_t i = 0;
-        while (handValues.size() < 5 && i < values.size()) {
-            if (values[i] != *threeOfAKindValue) {
-                handValues.push_back(values[i]);
-            }
-            i++;
-        }
-        return {HandType::ThreeOfAKind, handValues};
-    } else if (pairValues.size() >= 2) {
-        handValues = {pairValues[0], pairValues[0], pairValues[1], pairValues[1]};
-        size_t i = 0;
-        while (handValues.size() < 5 && i < values.size()) {
-            if (values[i] != pairValues[0] && values[i] != pairValues[1]) {
-                handValues.push_back(values[i]);
-            }
-            i++;
-        }
-        return {HandType::TwoPair, handValues};
-    } else if (pairValues.size() == 1) {
-        handValues = {*pairValues.rbegin(), *pairValues.rbegin()};
-        size_t i = 0;
-        while (handValues.size() < 5 && i < values.size()) {
-            if (values[i] != pairValues[0] && values[i] != pairValues[1]) {
-                handValues.push_back(values[i]);
-            }
-            i++;
-        }
-        return {HandType::Pair, handValues};
+    } else if (three_of_a_kind_value) {
+        ValueBitSet v = value_bits;
+        v.Remove(*three_of_a_kind_value);
+        auto hand_values = v.GetHighSortedValueList<3>();
+        return {HandType::ThreeOfAKind, {
+            *three_of_a_kind_value, *three_of_a_kind_value, *three_of_a_kind_value,
+            hand_values[0], hand_values[1]
+        }};
+    } else if (pair_count >= 2) {
+        ValueBitSet v = value_bits;
+        v.Remove(pair_values[0]);
+        v.Remove(pair_values[1]);
+        auto hand_values = v.GetHighSortedValueList<1>();
+        return {HandType::TwoPair, {
+            pair_values[0], pair_values[0],
+            pair_values[1], pair_values[1],
+            hand_values[0]
+        }};
+    } else if (pair_count == 1) {
+        ValueBitSet v = value_bits;
+        v.Remove(pair_values[0]);
+        auto hand_values = v.GetHighSortedValueList<3>();
+        return {HandType::Pair, {
+            pair_values[0], pair_values[0],
+            hand_values[0], hand_values[1], hand_values[2]
+        }};
     } else {
-        return {HandType::HighCard, {values[0], values[1], values[2], values[3], values[4]}};
+        auto hand_values = value_bits.GetHighSortedValueList<5>();
+        return {HandType::HighCard, hand_values};
     }
 }
 
-HandValue EvaluateHand(const Hand& hand, const Table& table)
+HandValue EvaluateHand(const Hand& hand, const std::vector<Card>& board)
 {
     std::vector<Card> cards;
     cards.insert(cards.end(), hand.cards.begin(), hand.cards.end());
-    cards.insert(cards.end(), table.flop.cards.begin(), table.flop.cards.end());
-    cards.push_back(table.turn.card);
-    cards.push_back(table.river.card);
-    return EvaluateCards(cards);
+    cards.insert(cards.end(), board.begin(), board.end());
+    return EvaluateCards(cards.data(), cards.size());
 }
 
 int CompareHands(const HandValue& self, const HandValue& opp)
 {
-    if (self.type < opp.type) {
+    uint32_t lhs = self.Pack();
+    uint32_t rhs = opp.Pack();
+    if (lhs < rhs) {
         return -1;
-    } else if (self.type > opp.type) {
+    } else if (lhs > rhs) {
         return 1;
     } else {
-        for (size_t i = 0; i < self.values.size(); ++i) {
-            if (self.values[i] < opp.values[i]) {
-                return -1;
-            } else if (self.values[i] > opp.values[i]) {
-                return 1;
-            }
-        }
         return 0;
     }
 }
@@ -635,7 +916,7 @@ std::vector<HandValue> GetHandValues(const Deal& deal)
 {
     std::vector<HandValue> handValues;
     for (const auto& hand : deal.hands) {
-        handValues.push_back(EvaluateHand(hand, deal.table));
+        handValues.push_back(EvaluateHand(hand, deal.board));
     }
     return handValues;
 }
@@ -676,53 +957,6 @@ void PrintGame(const Deal& deal)
 
 
 
-std::vector<Hand> GenerateAllHands(const Deck& deck)
-{
-    std::vector<Card> cards = deck.GetAllCards();
-    std::vector<Hand> hands;
-    for (int i = 0; i < cards.size(); ++i) {
-        for (int j = i + 1; j < cards.size(); ++j) {
-            hands.push_back({ cards[i], cards[j] });
-        }
-    }
-    return hands;
-}
-
-std::vector<Flop> GenerateAllFlops(const Deck& deck)
-{
-    std::vector<Card> cards = deck.GetAllCards();
-    std::vector<Flop> flops;
-    for (int i = 0; i < cards.size(); ++i) {
-        for (int j = i + 1; j < cards.size(); ++j) {
-            for (int k = j + 1; k < cards.size(); ++k) {
-                flops.push_back({ cards[i], cards[j], cards[k] });
-            }
-        }
-    }
-    return flops;
-}
-
-std::vector<Turn> GenerateAllTurns(const Deck& deck)
-{
-    std::vector<Card> cards = deck.GetAllCards();
-    std::vector<Turn> turns;
-    for (int i = 0; i < cards.size(); ++i) {
-        turns.push_back({ cards[i] });
-    }
-    return turns;
-}
-
-std::vector<River> GenerateAllRivers(const Deck& deck)
-{
-    std::vector<Card> cards = deck.GetAllCards();
-    std::vector<River> rivers;
-    for (int i = 0; i < cards.size(); ++i) {
-        rivers.push_back({ cards[i] });
-    }
-    return rivers;
-}
-
-
 struct Stats
 {
     size_t win = 0;
@@ -746,171 +980,6 @@ std::ostream& operator<<(std::ostream& os, const Stats& stats)
       // << ", count=" << stats.total
     ;
     return os;
-}
-
-
-bool g_verbose = false;
-
-Stats bruteforceRiver(const Hand& hand, const Flop& flop, const Turn& turn, const River& river)
-{
-    Deck deck;
-    deck.RemoveCards(hand.cards);
-    deck.RemoveCards(flop.cards);
-    deck.RemoveCard(turn.card);
-    deck.RemoveCard(river.card);
-
-    Stats stats;
-
-    auto hands2 = GenerateAllHands(deck);
-    for (const auto& hand2 : hands2) {
-        ++stats.total;
-
-        Deal deal{ {hand, hand2}, {flop, turn, river} };
-
-        if (g_verbose) {
-            PrintGame(deal);
-        }
-
-        auto values = GetHandValues(deal);
-        int result = CompareHands(values[0], values[1]);
-
-        if (result == 0) {
-            ++stats.draw;
-        } else if (result == 1) {
-            ++stats.win;
-        }
-    }
-
-    return stats;
-}
-
-Stats bruteforceTurn(const Hand& hand, const Flop& flop, const Turn& turn)
-{
-    Deck deck;
-    deck.RemoveCards(hand.cards);
-    deck.RemoveCards(flop.cards);
-    deck.RemoveCard(turn.card);
-
-    Stats stats;
-
-    auto rivers = GenerateAllRivers(deck);
-    for (const auto& river : rivers) {
-        stats += bruteforceRiver(hand, flop, turn, river);
-    }
-
-    return stats;
-}
-
-Stats bruteforceFlop(const Hand& hand, const Flop& flop)
-{
-    Deck deck;
-    deck.RemoveCards(hand.cards);
-    deck.RemoveCards(flop.cards);
-
-    Stats stats;
-
-    auto turns = GenerateAllTurns(deck);
-    for (const auto& turn : turns) {
-        stats += bruteforceTurn(hand, flop, turn);
-    }
-
-    return stats;
-}
-
-
-Stats bruteforceHand(const Hand& hand)
-{
-    Deck deck;
-    deck.RemoveCards(hand.cards);
-
-    Stats stats;
-
-    auto flops = GenerateAllFlops(deck);
-    for (const auto& flop : flops) {
-        stats += bruteforceFlop(hand, flop);
-    }
-
-    return stats;
-}
-
-
-
-
-struct OptDeal
-{
-    Hand hand;
-    Flop flop;
-    std::optional<Turn> turn;
-    std::optional<River> river;
-
-    static OptDeal FromString(const std::string& str)
-    {
-        // split string by spaces
-        std::vector<std::string> parts;
-        std::string part;
-        std::istringstream iss(str);
-        while (iss >> part) {
-            parts.push_back(part);
-        }
-
-        if (parts.size() < 2 || parts.size() > 4) {
-            throw std::runtime_error("Invalid deal string");
-        }
-
-        OptDeal deal;
-        deal.hand = Hand::FromString(parts[0]);
-        deal.flop = Flop::FromString(parts[1]);
-        if (parts.size() >= 3) {
-            deal.turn = Turn::FromString(parts[2]);
-        }
-        if (parts.size() == 4) {
-            deal.river = River::FromString(parts[3]);
-        }
-
-        return deal;
-    }
-
-    Stats Equity() const
-    {
-        if (river) {
-            return bruteforceRiver(hand, flop, *turn, *river);
-        } else if (turn) {
-            return bruteforceTurn(hand, flop, *turn);
-        } else {
-            return bruteforceFlop(hand, flop);
-        }
-    }
-};
-
-std::ostream& operator << (std::ostream& os, const OptDeal& deal)
-{
-    os << deal.hand << " " << deal.flop;
-    if (deal.turn) {
-        os << " " << *deal.turn;
-    }
-    if (deal.river) {
-        os << " " << *deal.river;
-    }
-    return os;
-}
-
-
-void calc_deal(const std::string& line)
-{
-    OptDeal deal = OptDeal::FromString(line);
-
-    Stats stats = deal.Equity();
-
-    std::cout << deal << " : " << stats << std::endl;
-}
-
-
-void calc_loop()
-{
-    std::string line;
-    while (std::getline(std::cin, line)) {
-        calc_deal(line);
-    }
 }
 
 
@@ -946,80 +1015,77 @@ int nCk(int n, int k)
     return nCk;
 }
 
-struct CombinationGenerator
-{
-    std::vector<int> state;
-    int n, k;
-    size_t combination_counter;
 
-    CombinationGenerator(int n, int k) :
-        n(n), k(k)
+struct CardsGenerator
+{
+    size_t combination_counter;
+    std::vector<Card> state;
+    CardBitSet dead;
+    const int n = 52;
+    int k = 0;
+
+    CardsGenerator(int k, const Card* dead_cards = nullptr, int dead_cards_count = 0) :
+        k(k)
     {
-        combination_counter = nCk(n, k);
+        for (int i = 0; i < dead_cards_count; ++i) {
+            dead.AddCard(dead_cards[i]);
+        }
+        combination_counter = nCk(n - dead_cards_count, k);
         state.resize(k);
         for (int i = 0; i < k; ++i) {
             state[i] = i;
         }
-        if (k != 0) state[k - 1]--;
+        if (k != 0) --state[k - 1];
     }
 
-    std::vector<int> next()
+    bool next()
     {
         if (k == 0 || combination_counter-- == 0)
         {
-            return {};
+            return false;
         }
 
         for (int i = k - 1; i >= 0; i--)
         {
-            state[i]++;
+            ++state[i];
+            while (dead.HasCard(state[i]) && state[i].index < n - k + i) {
+                ++state[i];
+            }
 
             // If "overflow", move to the element before.
-            if (state[i] > n - k + i) continue;
+            if (state[i].index > n - k + i) continue;
 
             // Reset the next elements.
-            for (int j = i + 1; j < k; j++) state[j] = state[j - 1] + 1;
+            for (int j = i + 1; j < k; j++) {
+                state[j].index = state[j - 1].index + 1;
+                while (dead.HasCard(state[j]) && state[j].index < n - k + j) {
+                    ++state[j];
+                }
+            }
             break;
         }
 
-        return state;
+        return true;
     }
 };
 
-void test_gen()
+void TestGen()
 {
-    CombinationGenerator gen(5, 3);
-
-    while (true) {
-        auto cards = gen.next();
-        if (cards.empty()) {
-            break;
+    std::vector<Card> dead_cards = ParseCards("3h4h5h6h7h8h9hThJhQhKh 3c4c5c6c7c8c9cTcJcQcKc 3d4d5d6d7d8d9dTdJdQdKd 3s4s5s6s7s8s9sTsJsQsKs");
+    CardsGenerator gen(2, dead_cards.data(), dead_cards.size());
+    int count = 0;
+    while (gen.next()) {
+        for (auto& card : gen.state) {
+            std::cout << card;
         }
-
-        for (auto c : cards) {
-            std::cout << c << " ";
+        std::cout << " ";
+        count++;
+        if (count % 13 == 0) {
+            std::cout << std::endl;
         }
-        std::cout << std::endl;
     }
+    std::cout << std::endl;
 }
-
-struct CardsGenerator : public CombinationGenerator
-{
-    CardsGenerator(int k) :
-        CombinationGenerator(52, k)
-    {
-    }
-
-    std::vector<Card> next()
-    {
-        auto cards = CombinationGenerator::next();
-        std::vector<Card> result;
-        for (auto c : cards) {
-            result.push_back(Card::FromIndex(c));
-        }
-        return result;
-    }
-};
 
 
 struct HandStats
@@ -1067,94 +1133,253 @@ std::ostream& operator << (std::ostream& os, const HandStats& stats)
 {
     for(int i = 9; i >= 0; --i) {
         os << std::setw(5) << HandType(i) << ": "
-            << std::setw(8) << stats.stats[i] << "   "
+            << std::setw(9) << stats.stats[i] << "   "
             << 100.0 * double(stats.stats[i]) / stats.total << "%"
             << std::endl;
     }
-    std::cout << "Deals: " << std::setw(8) << stats.total << std::endl;
+    std::cout << "Deals: " << std::setw(9) << stats.total << std::endl;
     return os;
 }
 
-void EvalAllDeals()
+void LoopAllDeals()
 {
+    std::map<uint32_t, std::pair<HandValue, size_t>> all_hands;
     CardsGenerator gen(7);
 
-    size_t all_deals_count = 0;
     HandStats hand_stats;
+    auto start = std::chrono::system_clock::now();
 
-    while (true) {
-        auto cards = gen.next();
+    while (gen.next()) {
+        auto hand_value = EvaluateCards(gen.state.data(), gen.state.size());
 
-        if (!cards.empty()) {
-            all_deals_count++;
-
-            auto hand_value = EvaluateCards(cards);
-
-            hand_stats.Add(hand_value.type);
+        auto it = all_hands.find(hand_value.Pack());
+        if (it != all_hands.end()) {
+            it->second.second++;
+        } else {
+            all_hands[hand_value.Pack()] = {hand_value, 1};
         }
 
-        if (all_deals_count % 1000000 == 0 || cards.empty()) {
-            std::cout << "\n=======================================" << std::endl;
-            std::cout << hand_stats << std::endl << std::endl;
-        }
+        hand_stats.Add(hand_value.type);
 
-        if (cards.empty()) {
-            break;
+        if (hand_stats.total % 1'000'000 == 0) {
+            std::cout << "=======================================" << std::endl;
+            std::cout << hand_stats << std::endl;
         }
     }
+    auto end = std::chrono::system_clock::now();
+    std::cout << "=======================================" << std::endl;
+    std::cout << hand_stats << std::endl;
+    std::cout << "Elapsed: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
 
     hand_stats.Verify();
+
+    std::cout << "Lookup Hits: " << g_lookup_hits << std::endl;
+    std::cout << "Lookup Misses: " << g_lookup_misses << std::endl;
+
+    for (const auto& [key, hand] : all_hands) {
+        std::cout << hand.first
+            << "  packed: 0x" << std::hex << hand.first.Pack() << std::dec
+            << "  hash: " << hand.first.Hash()
+            << "  times: " << hand.second
+            << std::endl;
+    }
+    std::cout << "Total hands: " << all_hands.size() << std::endl;
 }
 
-OptDeal RandomDeal(bool turn = true, bool river = true)
+void TestHash52To23()
 {
-    auto deck = Deck{}.shuffle();
+    std::unordered_set<uint64_t> all_deals_64;
+    std::unordered_set<uint32_t> all_deals_32;
+    std::unordered_set<uint32_t> high_20_bits;
+    std::unordered_set<uint32_t> low_32_bits;
 
-    OptDeal deal{
-        .hand{deck[0], deck[1]},
-        .flop{deck[2], deck[3], deck[4]}
-    };
-    if (turn) {
-        deal.turn = Turn{deck[5]};
-        if (river) {
-            deal.river = River{deck[6]};
+    CardsGenerator gen(7);
+
+    while (gen.next()) {
+        CardBitSet set(gen.state);
+
+        set.SortSuits();
+        uint64_t bits = set.Get52Bits();
+
+        if (all_deals_64.find(bits) != all_deals_64.end()) {
+            continue;
+        }
+
+        all_deals_64.insert(bits);
+        high_20_bits.insert(bits >> 32);
+        low_32_bits.insert(bits & 0xFFFFFFFF);
+
+        uint32_t *p = (uint32_t*)&bits;
+        uint32_t bits32 = p[0] ^ (p[1] << 12);
+        all_deals_32.insert(bits32);
+    }
+
+    std::cout << "64 bit keys: " << all_deals_64.size() << std::endl;
+    std::cout << "32 bit keys: " << all_deals_32.size() << std::endl;
+    std::cout << "High 20 bits: " << high_20_bits.size() << std::endl;
+    std::cout << "Low 32 bits: " << low_32_bits.size() << std::endl;
+
+}
+
+
+void GenerateHandLookupTable()
+{
+#if ENABLE_HAND_LOOKUP_TABLE
+    std::cout << "Generating lookup table..." << std::endl;
+    std::cout << "This may take a while..." << std::endl;
+    std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
+    CardsGenerator gen(7);
+
+    //g_hand_lookup_table.reserve(6009159);
+    //g_hand_lookup_table.set_empty_key(0);
+
+    while (gen.next()) {
+        CardBitSet hand_bitset(gen.state);
+        hand_bitset.SortSuits();
+        int64_t key = hand_bitset.Get52Bits();
+        if (g_hand_lookup_table.find(key) != g_hand_lookup_table.end()) {
+            continue;
+        }
+        auto hand_value = EvaluateCards(gen.state.data(), gen.state.size());
+        g_hand_lookup_table[key] = hand_value;
+    }
+
+    std::cout << "Lookup table size: " << g_hand_lookup_table.size() << std::endl;
+    std::chrono::system_clock::time_point end = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end - start;
+    std::cout << "Elapsed time: " << elapsed_seconds.count() << "s" << std::endl;
+#endif
+}
+
+
+Stats EquityHeadsup(const Hand& hand, const std::vector<Card>& board, bool verbose)
+{
+    Stats stats;
+    size_t next_total_output = 2'000'000;
+
+    std::array<Card, 9> deal_state;
+    deal_state[0] = hand.cards[0];
+    deal_state[1] = hand.cards[1];
+    for (int i = 0; i < board.size(); ++i) {
+        deal_state[i + 2] = board[i];
+    }
+
+    CardsGenerator board_gen(5 - board.size(), deal_state.data(), 2 + board.size());
+
+    while (board_gen.next()) {
+        for (int i = 0; i < board_gen.state.size(); ++i) {
+            deal_state[2 + board.size() + i] = board_gen.state[i];
+        }
+
+        auto our_hand_value = EvaluateCards(deal_state.data(), 7);
+
+        CardsGenerator hand_gen(2, deal_state.data(), 7);
+
+        while(hand_gen.next()) {
+            deal_state[7] = hand_gen.state[0];
+            deal_state[8] = hand_gen.state[1];
+
+            auto hand_value = EvaluateCards(deal_state.data() + 2, 7);
+
+            int cmp = CompareHands(our_hand_value, hand_value);
+
+            stats.total++;
+            if (cmp > 0) {
+                stats.win++;
+            } else if (cmp == 0) {
+                stats.draw++;
+            }
+
+            if (verbose) {
+                PrintGame(Deal{
+                    .hands = { hand, Hand{ deal_state[7], deal_state[8] } },
+                    .board = { deal_state[2], deal_state[3], deal_state[4], deal_state[5], deal_state[6] }
+                });
+            }
+        }
+
+        if (stats.total >= next_total_output) {
+            //std::cout << "==========================" << std::endl;
+            //std::cout << hand << " " << board << " : " << stats << "; Total deals: " << stats.total << std::endl;
+            next_total_output += 10'000'000;
         }
     }
 
-    return deal;
+    return stats;
 }
 
-void RandomDealEquityLoop(bool turn = true, bool river = true)
+
+std::vector<Card> RandomCards(int count)
+{
+    std::vector<Card> cards;
+    cards.reserve(count);
+    CardBitSet deck = CardBitSet::FullDeck();
+    std::uniform_int_distribution<int> distr(0, 51);
+    while (cards.size() < count) {
+        Card card = Card(distr(g_rnd));
+        if (deck.HasCard(card)) {
+            cards.push_back(card);
+            deck.RemoveCard(card);
+        }
+    }
+    return cards;
+}
+
+void DealEquity(const std::vector<Card>& deal, bool verbose)
+{
+    std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
+    auto stats = EquityHeadsup(Hand{ deal[0], deal[1] }, {deal.begin() + 2, deal.end()}, verbose);
+    std::chrono::system_clock::time_point end = std::chrono::system_clock::now();
+    std::cout << deal << ": " << stats << "; ";
+    std::chrono::duration<double> elapsed_seconds = end - start;
+    std::cout << "Total deals: " << stats.total << "; "
+        << "Elapsed time: " << elapsed_seconds.count() << "s"
+        << std::endl;
+}
+
+
+void RandomDealEquityLoop(int board_cards)
 {
     while (true) {
-        auto deal = RandomDeal(turn, river);
-        auto stats = deal.Equity();
-        std::cout << deal << " : " << stats << std::endl;
+        auto deal = RandomCards(2 + board_cards);
+        DealEquity(deal, false);
     }
 }
-
 
 
 void TestEval()
 {
     static const std::vector<std::pair<std::string, std::string>> tests = {
         {"AsKs QsJsTs Ah Kh", "RF AKQJT"},
-        {"5d2h Kh9sQd 9h Kd", "2p KK99Q"},
-        {"4h6h 4c4dKc 9c Ts", " 3 444KT"},
+
+        {"QsJs 9c7c6c Tc 8c", "SF T9876"},
+        {"KdQd 9dJd8d 7d Td", "SF KQJT9"},
+
         {"9hKc Jd7sKs 9c Kh", "FH KKK99"},
-        {"3cJd 7h8d6d Qc 9h", " h QJ987"},
-        {"2d7c JcQdAd 6c 6s", " p 66AQJ"},
-        {"8c8d 4d2s5d 8s 7d", " 3 88875"},
-        {"6dJc 6s2hAd Tc 2c", "2p 6622A"},
-        {"7cTc 5d2c3h Ah 6s", " h AT765"},
+        {"2s2c Ac3d3c 2h 3s", "FH 33322"},
+
         {"Jh8h 5h2c2h Kh 9h", " F KJ985"},
+        {"Jc7c JsJh3c Tc 8c", " F JT873"},
+
         {"Jc9s 7c4s5h Ts 8h", " S JT987"},
         {"Jc9s 3c4s5h As 2h", " S 5432A"},
+
+        {"4h6h 4c4dKc 9c Ts", " 3 444KT"},
+        {"8c8d 4d2s5d 8s 7d", " 3 88875"},
+
+        {"5d2h Kh9sQd 9h Kd", "2p KK99Q"},
+        {"6dJc 6s2hAd Tc 2c", "2p 6622A"},
+
+        {"2d7c JcQdAd 6c 6s", " p 66AQJ"},
+        {"KcAs 3c2s6d Ad Jd", " p AAKJ6"},
+
+        {"3cJd 7h8d6d Qc 9h", " h QJ987"},
+        {"7cTc 5d2c3h Ah 6s", " h AT765"},
     };
 
     for (const auto& [deal, expected] : tests) {
         auto cards = ParseCards(deal);
-        auto hand_value = EvaluateCards(cards);
+        auto hand_value = EvaluateCards(cards.data(), cards.size());
         std::string hand_value_str = to_string(hand_value);
         if (hand_value_str != expected) {
             std::cout << "FAIL: " << deal << " : " << hand_value_str << " != " << expected << std::endl;
@@ -1167,20 +1392,20 @@ void TestEval()
 
 int main(int argc, const char* argv[])
 {
-    g_verbose = false;
-
     std::string line;
     for (int i = 1; i < argc; ++i) {
         line += std::string(argv[i]) + " ";
     }
     if (!line.empty()) {
-        calc_deal(line);
+        auto deal = ParseCards(line);
+        DealEquity(deal, true);
     } else {
-        EvalAllDeals();
-
-        // RandomDealEquityLoop(false, false);
-
-        // TestEval();
+        //TestEval();
+        //TestGen();
+        //GenerateHandLookupTable();
+        // TestHash52To23();
+        LoopAllDeals();
+        //RandomDealEquityLoop(0);
     }
 
     return 0;
