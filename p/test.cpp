@@ -391,6 +391,8 @@ struct ValueBitSet
 
     ValueBitSet() = default;
 
+    ValueBitSet(Value value) : bits(ValueMask(value)) {}
+
     explicit ValueBitSet(uint16_t bits) : bits(bits) {}
 
     static constexpr uint16_t ValueMask(Value value)
@@ -479,20 +481,31 @@ struct ValueBitSet
         return list;
     }
 
-    template<size_t N>
-    std::array<Value, N> GetHighSortedValueList() const
+    Value GetHighestValue() const
     {
-        std::array<Value, N> list;
+        for (int value = static_cast<int>(Value::Ace); value >= static_cast<int>(Value::Two); --value) {
+            if (bits & ValueMask(static_cast<Value>(value))) {
+                return static_cast<Value>(value);
+            }
+        }
+        throw std::runtime_error("ValueBitSet is empty");
+    }
+
+    template<size_t N>
+    ValueBitSet GetHighestValues() const
+    {
+        ValueBitSet list;
         size_t i = 0;
         for (int value = static_cast<int>(Value::Ace); value >= static_cast<int>(Value::Two); --value) {
             if (bits & ValueMask(static_cast<Value>(value))) {
-                list[i++] = static_cast<Value>(value);
+                list += ValueBitSet(static_cast<Value>(value));
+                i++;
             }
             if (i == N) {
-                break;
+                return list;
             }
         }
-        return list;
+        throw std::runtime_error("ValueBitSet is empty");
     }
 
     void Add(Value value)
@@ -514,13 +527,52 @@ struct ValueBitSet
         }
         return result;
     }
+
+    ValueBitSet& operator += (Value value)
+    {
+        Add(value);
+        return *this;
+    }
+    ValueBitSet& operator -= (Value value)
+    {
+        Remove(value);
+        return *this;
+    }
+    ValueBitSet& operator += (ValueBitSet other)
+    {
+        bits |= other.bits;
+        return *this;
+    }
+    ValueBitSet& operator -= (ValueBitSet other)
+    {
+        bits &= ~other.bits;
+        return *this;
+    }
 };
+
+ValueBitSet operator + (ValueBitSet lhs, Value value)
+{
+    return ValueBitSet(lhs.bits | ValueBitSet::ValueMask(value));
+}
+ValueBitSet operator - (ValueBitSet lhs, Value value)
+{
+    return ValueBitSet(lhs.bits & ~ValueBitSet::ValueMask(value));
+}
+ValueBitSet operator + (ValueBitSet lhs, ValueBitSet rhs)
+{
+    return ValueBitSet(lhs.bits | rhs.bits);
+}
+ValueBitSet operator - (ValueBitSet lhs, ValueBitSet rhs)
+{
+    return ValueBitSet(lhs.bits & ~rhs.bits);
+}
+
 
 std::ostream& operator<<(std::ostream& os, const ValueBitSet& set)
 {
-    for (uint8_t i = 0; i < 13; ++i) {
-        if (set.bits & ValueBitSet::ValueMask(Value{i})) {
-            os << Value{i};
+    for (int8_t i = 13; i >= 0; --i) {
+        if (set.bits & ValueBitSet::ValueMask(Value(i))) {
+            os << Value(i);
         }
     }
     return os;
@@ -553,6 +605,32 @@ struct CardBitSet
             | suit_values[1] << (16 - 3)
             | suit_values[2] << (32 - 6)
             | suit_values[3] << (48 - 9);
+    }
+
+    int64_t Get40Bits() const
+    {
+        int64_t result = 0;
+        int64_t shift = 1;
+        for (int8_t i = 0; i < 52; i++) {
+            if (HasCard(i)) {
+                result += i * shift;
+                shift *= 52;
+            }
+        }
+        return result;
+    }
+
+    uint32_t Get32Bits() const
+    {
+        int64_t result = 0;
+        int64_t shift = 1;
+        for (int8_t i = 0; i < 52; i++) {
+            if (HasCard(i)) {
+                result += i * shift;
+                shift *= 52;
+            }
+        }
+        return result & 0xFFFFFFFF;
     }
 
     static CardBitSet FullDeck()
@@ -631,17 +709,17 @@ std::ostream& operator<<(std::ostream& os, const CardBitSet& set)
 }
 
 enum class HandType : uint8_t
-{                  //  size of descriptor
-    HighCard = 0,  //             5 cards
-    Pair,          //     1 + 4 = 5 cards
-    TwoPair,       // 1 + 1 + 1 = 3 cards
-    ThreeOfAKind,  //     1 + 2 = 3 cards
-    Straight,      //             1 cards
-    Flush,         //             5 cards
-    FullHouse,     //     1 + 1 = 2 cards
-    FourOfAKind,   //     1 + 1 = 2 cards
-    StraightFlush, //             1 cards
-    RoyalFlush     //             0 cards
+{                  //  size of descriptor | type
+    HighCard = 0,  //             5 cards | mask
+    Pair,          //     1 + 3 = 4 cards | 4 values
+    TwoPair,       // 1 + 1 + 1 = 3 cards | 3 values
+    ThreeOfAKind,  //     1 + 2 = 3 cards | 3 values
+    Straight,      //             1 card  | value
+    Flush,         //             5 cards | mask
+    FullHouse,     //     1 + 1 = 2 cards | mask
+    FourOfAKind,   //     1 + 1 = 2 cards | 2 values
+    StraightFlush, //             1 card  | value
+    RoyalFlush     //             0 cards | -
 };
 
 bool operator<(HandType lhs, HandType rhs)
@@ -657,28 +735,49 @@ bool operator>(HandType lhs, HandType rhs)
 struct HandValue
 {
     HandType type;
-    std::array<Value, 5> values;
+    std::optional<Value> value;
+    std::optional<ValueBitSet> values;
 
     uint32_t Pack() const
     {
-        uint32_t result = static_cast<uint32_t>(type) << 20
-            | static_cast<uint32_t>(values[0]) << 16
-            | static_cast<uint32_t>(values[1]) << 12
-            | static_cast<uint32_t>(values[2]) << 8
-            | static_cast<uint32_t>(values[3]) << 4
-            | static_cast<uint32_t>(values[4]);
+        uint32_t result = static_cast<uint32_t>(type) << 17;
+        if (type == HandType::TwoPair) {
+            if (values) {
+                result |= values->bits << 4;
+            }
+            if (value) {
+                result |= static_cast<uint32_t>(*value);
+            }
+        } else {
+            if (value) {
+                result |= static_cast<uint32_t>(*value) << 13;
+            }
+            if (values) {
+                result |= values->bits;
+            }
+        }
         return result;
     }
 
     uint32_t Hash() const
     {
-        uint32_t hash = static_cast<uint32_t>(values[4]);
-        hash += static_cast<uint32_t>(values[3]) * 13;
-        hash += static_cast<uint32_t>(values[2]) * 13 * 13;
-        hash += static_cast<uint32_t>(values[1]) * 13 * 13 * 13;
-        hash += static_cast<uint32_t>(values[0]) * 13 * 13 * 13 * 13;
-        hash += static_cast<uint32_t>(type) * 13 * 13 * 13 * 13 * 13;
-        return hash - 213995; // minus min value
+        uint32_t hash = static_cast<uint32_t>(type) * 13 * (1 << 13);
+        if (type == HandType::TwoPair) {
+            if (values) {
+                hash += values->bits * 13;
+            }
+            if (value) {
+                hash += static_cast<uint32_t>(*value);
+            }
+        } else {
+            if (value) {
+                hash += static_cast<uint32_t>(*value) << 13;
+            }
+            if (values) {
+                hash += values->bits;
+            }
+        }
+        return hash;
     }
 };
 
@@ -693,7 +792,7 @@ bool operator>(const HandValue& lhs, const HandValue& rhs)
 
 //std::unordered_map<uint64_t, HandValue> g_hand_lookup_table;
 //google::dense_hash_map<int64_t, HandValue> g_hand_lookup_table;
-gtl::flat_hash_map<int64_t, HandValue, std::hash<int64_t>> g_hand_lookup_table;
+gtl::flat_hash_map<uint32_t, HandValue, std::hash<uint32_t>> g_hand_lookup_table;
 
 
 std::ostream& operator<<(std::ostream& os, const std::vector<Value>& value)
@@ -717,28 +816,28 @@ std::ostream& operator<<(std::ostream& os, HandType type)
 {
     switch (type) {
         case HandType::HighCard:
-            os << " h";
+            os << "h";
             break;
         case HandType::Pair:
-            os << " p";
+            os << "p";
             break;
         case HandType::TwoPair:
             os << "2p";
             break;
         case HandType::ThreeOfAKind:
-            os << " 3";
+            os << "3";
             break;
         case HandType::Straight:
-            os << " S";
+            os << "S";
             break;
         case HandType::Flush:
-            os << " F";
+            os << "F";
             break;
         case HandType::FullHouse:
             os << "FH";
             break;
         case HandType::FourOfAKind:
-            os << " 4";
+            os << "4";
             break;
         case HandType::StraightFlush:
             os << "SF";
@@ -752,7 +851,17 @@ std::ostream& operator<<(std::ostream& os, HandType type)
 
 std::ostream& operator<<(std::ostream& os, const HandValue& handValue)
 {
-    os << handValue.type << " " << handValue.values;
+    if (handValue.type == HandType::TwoPair) {
+        os << handValue.type << " " << *handValue.values << " " << *handValue.value;
+    } else {
+        os << handValue.type;
+        if (handValue.value) {
+            os << " " << *handValue.value;
+        }
+        if (handValue.values) {
+            os << " " << *handValue.values;
+        }
+    }
     return os;
 }
 
@@ -769,7 +878,7 @@ HandValue EvaluateCards(const Card* cards, size_t count)
 
 #if ENABLE_HAND_LOOKUP_TABLE
     card_bits.SortSuits();
-    int64_t key = card_bits.Get52Bits();
+    uint32_t key = card_bits.Get32Bits();
 
     auto it = g_hand_lookup_table.find(key);
     if (it != g_hand_lookup_table.end()) {
@@ -801,9 +910,8 @@ HandValue EvaluateCards(const Card* cards, size_t count)
         Value value = values.values[i];
         size_t count = value_counts[static_cast<size_t>(value)];
         if (count == 4) {
-            ValueBitSet v = value_bits;
-            v.Remove(value);
-            return {HandType::FourOfAKind, {value, value, value, value, v.GetHighSortedValueList<1>()[0]}};
+            value_bits -= value;
+            return { HandType::FourOfAKind, value, value_bits.GetHighestValues<1>() };
         } else if (count == 3) {
             if (three_of_a_kind_value) {
                 pair_values[pair_count++] = value;
@@ -833,9 +941,13 @@ HandValue EvaluateCards(const Card* cards, size_t count)
         straight_flush_values = flush_values.FindStraight();
         if (straight_flush_values) {
             if (straight_flush_values.HasRoyalStraight()) {
-                return {HandType::RoyalFlush, straight_flush_values.GetHighSortedValueList<5>()};
+                return { HandType::RoyalFlush };
             } else {
-                return {HandType::StraightFlush, straight_flush_values.GetHighSortedValueList<5>()};
+                if (straight_flush_values.HasCircleStraight()) {
+                    return { HandType::StraightFlush, Value::Five };
+                } else {
+                    return { HandType::StraightFlush, straight_flush_values.GetHighestValue() };
+                }
             }
         }
     }
@@ -847,47 +959,28 @@ HandValue EvaluateCards(const Card* cards, size_t count)
 
     // Evaluate Hand
     if (three_of_a_kind_value && pair_count >= 1) {
-        return {HandType::FullHouse, {
-            *three_of_a_kind_value, *three_of_a_kind_value, *three_of_a_kind_value,
-            pair_values[0], pair_values[0]
-        }};
+        return { .type=HandType::FullHouse, .values=ValueBitSet(*three_of_a_kind_value) + pair_values[0] };
     } else if (flush_values) {
-        return {HandType::Flush, flush_values.GetHighSortedValueList<5>()};
+        return { .type=HandType::Flush, .values=flush_values };
     } else if (straight_values) {
         if (straight_values.HasCircleStraight()) {
-            return {HandType::Straight, {Value::Five, Value::Four, Value::Three, Value::Two, Value::Ace}};
+            return { .type=HandType::Straight, .value=Value::Five };
         } else {
-            return {HandType::Straight, straight_values.GetHighSortedValueList<5>()};
+            return { .type=HandType::Straight, .value=straight_values.GetHighestValue() };
         }
     } else if (three_of_a_kind_value) {
-        ValueBitSet v = value_bits;
-        v.Remove(*three_of_a_kind_value);
-        auto hand_values = v.GetHighSortedValueList<3>();
-        return {HandType::ThreeOfAKind, {
-            *three_of_a_kind_value, *three_of_a_kind_value, *three_of_a_kind_value,
-            hand_values[0], hand_values[1]
-        }};
+        value_bits -= *three_of_a_kind_value;
+        return { HandType::ThreeOfAKind, *three_of_a_kind_value, value_bits.GetHighestValues<2>() };
     } else if (pair_count >= 2) {
-        ValueBitSet v = value_bits;
-        v.Remove(pair_values[0]);
-        v.Remove(pair_values[1]);
-        auto hand_values = v.GetHighSortedValueList<1>();
-        return {HandType::TwoPair, {
-            pair_values[0], pair_values[0],
-            pair_values[1], pair_values[1],
-            hand_values[0]
-        }};
+        ValueBitSet pairs = pair_values[0];
+        pairs += pair_values[1];
+        value_bits -= pairs;
+        return { .type=HandType::TwoPair, .value=value_bits.GetHighestValue(), .values = pairs };
     } else if (pair_count == 1) {
-        ValueBitSet v = value_bits;
-        v.Remove(pair_values[0]);
-        auto hand_values = v.GetHighSortedValueList<3>();
-        return {HandType::Pair, {
-            pair_values[0], pair_values[0],
-            hand_values[0], hand_values[1], hand_values[2]
-        }};
+        value_bits -= pair_values[0];
+        return { HandType::Pair, pair_values[0], value_bits.GetHighestValues<3>() };
     } else {
-        auto hand_values = value_bits.GetHighSortedValueList<5>();
-        return {HandType::HighCard, hand_values};
+        return { .type=HandType::HighCard, .values=value_bits.GetHighestValues<5>() };
     }
 }
 
@@ -1177,7 +1270,7 @@ void LoopAllDeals()
     std::cout << "Lookup Misses: " << g_lookup_misses << std::endl;
 
     for (const auto& [key, hand] : all_hands) {
-        std::cout << hand.first
+        std::cout << hand.first << " |"
             << "  packed: 0x" << std::hex << hand.first.Pack() << std::dec
             << "  hash: " << hand.first.Hash()
             << "  times: " << hand.second
@@ -1186,45 +1279,58 @@ void LoopAllDeals()
     std::cout << "Total hands: " << all_hands.size() << std::endl;
 }
 
-void TestHash52To23()
+void TestHash52bit()
 {
-    std::unordered_set<uint64_t> all_deals_64;
-    std::unordered_set<uint32_t> all_deals_32;
-    std::unordered_set<uint32_t> high_20_bits;
-    std::unordered_set<uint32_t> low_32_bits;
+    std::unordered_set<uint32_t> all_deals;
+    std::unordered_set<uint16_t> high_16_bits;
+    std::unordered_set<uint16_t> low_16_bits;
+    std::unordered_set<uint8_t> high_8_bits[4];
+    std::unordered_set<uint32_t> low_24_bits;
 
     CardsGenerator gen(7);
+
+    uint32_t xor_mask = 0;
 
     while (gen.next()) {
         CardBitSet set(gen.state);
 
         set.SortSuits();
-        uint64_t bits = set.Get52Bits();
+        uint32_t bits = set.Get32Bits();
 
-        if (all_deals_64.find(bits) != all_deals_64.end()) {
+        if (all_deals.find(bits) != all_deals.end()) {
             continue;
         }
 
-        all_deals_64.insert(bits);
-        high_20_bits.insert(bits >> 32);
-        low_32_bits.insert(bits & 0xFFFFFFFF);
+        all_deals.insert(bits);
 
-        uint32_t *p = (uint32_t*)&bits;
-        uint32_t bits32 = p[0] ^ (p[1] << 12);
-        all_deals_32.insert(bits32);
+        high_16_bits.insert((bits >> 16) & 0xFFFF);
+        low_16_bits.insert(bits & 0xFFFF);
+        high_8_bits[0].insert((bits >> 24) & 0xFF);
+        high_8_bits[1].insert((bits >> 16) & 0xFF);
+        high_8_bits[2].insert((bits >> 8) & 0xFF);
+        high_8_bits[3].insert(bits & 0xFF);
+        low_24_bits.insert(bits & 0xFFFFFF);
+
+        xor_mask ^= bits;
     }
 
-    std::cout << "64 bit keys: " << all_deals_64.size() << std::endl;
-    std::cout << "32 bit keys: " << all_deals_32.size() << std::endl;
-    std::cout << "High 20 bits: " << high_20_bits.size() << std::endl;
-    std::cout << "Low 32 bits: " << low_32_bits.size() << std::endl;
-
+    std::cout << "32 bit keys: " << all_deals.size() << std::endl;
+    std::cout << "High 16 bits: " << high_16_bits.size() << std::endl;
+    std::cout << "Low 16 bits: " << low_16_bits.size() << std::endl;
+    std::cout << "Highest 8 bits [3]: " << high_8_bits[0].size() << std::endl;
+    std::cout << "High 8 bits [2]: " << high_8_bits[1].size() << std::endl;
+    std::cout << "Low 8 bits [1]: " << high_8_bits[2].size() << std::endl;
+    std::cout << "Lowest 8 bits [0]: " << high_8_bits[3].size() << std::endl;
+    std::cout << "Low 24 bits: " << low_24_bits.size() << std::endl;
+    if (all_deals.find(xor_mask) != all_deals.end()) {
+        std::cout << "XOR mask is in the set!" << std::endl;
+    }
+    std::cout << "XOR mask: 0x" << std::hex << xor_mask << std::dec << std::endl;
 }
 
 
 void GenerateHandLookupTable()
 {
-#if ENABLE_HAND_LOOKUP_TABLE
     std::cout << "Generating lookup table..." << std::endl;
     std::cout << "This may take a while..." << std::endl;
     std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
@@ -1236,7 +1342,7 @@ void GenerateHandLookupTable()
     while (gen.next()) {
         CardBitSet hand_bitset(gen.state);
         hand_bitset.SortSuits();
-        int64_t key = hand_bitset.Get52Bits();
+        uint32_t key = hand_bitset.Get32Bits();
         if (g_hand_lookup_table.find(key) != g_hand_lookup_table.end()) {
             continue;
         }
@@ -1248,7 +1354,6 @@ void GenerateHandLookupTable()
     std::chrono::system_clock::time_point end = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsed_seconds = end - start;
     std::cout << "Elapsed time: " << elapsed_seconds.count() << "s" << std::endl;
-#endif
 }
 
 
@@ -1350,31 +1455,34 @@ void RandomDealEquityLoop(int board_cards)
 void TestEval()
 {
     static const std::vector<std::pair<std::string, std::string>> tests = {
-        {"AsKs QsJsTs Ah Kh", "RF AKQJT"},
+        {"AsKs QsJsTs Ah Kh", "RF"},
 
-        {"QsJs 9c7c6c Tc 8c", "SF T9876"},
-        {"KdQd 9dJd8d 7d Td", "SF KQJT9"},
+        {"QsJs 9c7c6c Tc 8c", "SF T"},
+        {"KdQd 9dJd8d 7d Td", "SF K"},
 
-        {"9hKc Jd7sKs 9c Kh", "FH KKK99"},
-        {"2s2c Ac3d3c 2h 3s", "FH 33322"},
+        {"KsKd 9s9dKc Kh 7s", "4 K 9"},
+        {"KsKd 2s2dKc Kh 2c", "4 K 2"},
 
-        {"Jh8h 5h2c2h Kh 9h", " F KJ985"},
-        {"Jc7c JsJh3c Tc 8c", " F JT873"},
+        {"9hKc Jd7sKs 9c Kh", "FH K9"},
+        {"2s2c Ac3d3c 2h 3s", "FH 32"},
 
-        {"Jc9s 7c4s5h Ts 8h", " S JT987"},
-        {"Jc9s 3c4s5h As 2h", " S 5432A"},
+        {"Jh8h 5h2c2h Kh 9h", "F KJ985"},
+        {"Jc7c JsJh3c Tc 8c", "F JT873"},
 
-        {"4h6h 4c4dKc 9c Ts", " 3 444KT"},
-        {"8c8d 4d2s5d 8s 7d", " 3 88875"},
+        {"Jc9s 7c4s5h Ts 8h", "S J"},
+        {"Jc9s 3c4s5h As 2h", "S 5"},
 
-        {"5d2h Kh9sQd 9h Kd", "2p KK99Q"},
-        {"6dJc 6s2hAd Tc 2c", "2p 6622A"},
+        {"4h6h 4c4dKc 9c Ts", "3 4 KT"},
+        {"8c8d 4d2s5d 8s 7d", "3 8 75"},
 
-        {"2d7c JcQdAd 6c 6s", " p 66AQJ"},
-        {"KcAs 3c2s6d Ad Jd", " p AAKJ6"},
+        {"5d2h Kh9sQd 9h Kd", "2p K9 Q"},
+        {"6dJc 6s2hAd Tc 2c", "2p 62 A"},
 
-        {"3cJd 7h8d6d Qc 9h", " h QJ987"},
-        {"7cTc 5d2c3h Ah 6s", " h AT765"},
+        {"2d7c JcQdAd 6c 6s", "p 6 AQJ"},
+        {"KcAs 3c2s6d Ad Jd", "p A KJ6"},
+
+        {"3cJd 7h8d6d Qc 9h", "h QJ987"},
+        {"7cTc 5d2c3h Ah 6s", "h AT765"},
     };
 
     for (const auto& [deal, expected] : tests) {
@@ -1400,12 +1508,12 @@ int main(int argc, const char* argv[])
         auto deal = ParseCards(line);
         DealEquity(deal, true);
     } else {
-        //TestEval();
+        TestEval();
         //TestGen();
         //GenerateHandLookupTable();
-        // TestHash52To23();
-        LoopAllDeals();
-        //RandomDealEquityLoop(0);
+        TestHash52bit();
+        //LoopAllDeals();
+        //RandomDealEquityLoop(3);
     }
 
     return 0;
