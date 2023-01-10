@@ -169,7 +169,20 @@ struct Card
         --index;
         return *this;
     }
+
+    Card& operator+(int i)
+    {
+        index += i;
+        return *this;
+    }
+
+    Card& operator-(int i)
+    {
+        index -= i;
+        return *this;
+    }
 };
+
 
 bool operator<(const Card& lhs, const Card& rhs)
 {
@@ -265,6 +278,15 @@ std::ostream& operator<<(std::ostream& os, const Card& card)
 
 
 std::ostream& operator << (std::ostream& os, const std::vector<Card>& cards)
+{
+    for (const auto& card : cards) {
+        os << card << " ";
+    }
+    return os;
+}
+
+template<typename T, size_t N>
+std::ostream& operator << (std::ostream& os, const std::array<T, N>& cards)
 {
     for (const auto& card : cards) {
         os << card << " ";
@@ -709,17 +731,17 @@ std::ostream& operator<<(std::ostream& os, const CardBitSet& set)
 }
 
 enum class HandType : uint8_t
-{                  //  size of descriptor | type
-    HighCard = 0,  //             5 cards | mask
-    Pair,          //     1 + 3 = 4 cards | 4 values
-    TwoPair,       // 1 + 1 + 1 = 3 cards | 3 values
-    ThreeOfAKind,  //     1 + 2 = 3 cards | 3 values
-    Straight,      //             1 card  | value
-    Flush,         //             5 cards | mask
-    FullHouse,     //     1 + 1 = 2 cards | mask
-    FourOfAKind,   //     1 + 1 = 2 cards | 2 values
-    StraightFlush, //             1 card  | value
-    RoyalFlush     //             0 cards | -
+{                  //  size of descriptor | type     | size
+    HighCard = 0,  //             5 cards | mask     |  13
+    Pair,          //     1 + 3 = 4 cards | 4 values |  15
+    TwoPair,       // 1 + 1 + 1 = 3 cards | 3 values |  12
+    ThreeOfAKind,  //     1 + 2 = 3 cards | 3 values |  12
+    Straight,      //             1 card  | value    |   4
+    Flush,         //             5 cards | mask     |  13
+    FullHouse,     //     1 + 1 = 2 cards | 2 values |   8
+    FourOfAKind,   //     1 + 1 = 2 cards | 2 values |   8
+    StraightFlush, //             1 card  | value    |   4
+    RoyalFlush     //             0 cards | -        |   0
 };
 
 bool operator<(HandType lhs, HandType rhs)
@@ -779,6 +801,10 @@ struct HandValue
         }
         return hash;
     }
+    static constexpr size_t MAX_HASH_VALUE =
+        static_cast<size_t>(HandType::RoyalFlush)
+        * static_cast<size_t>(Value::Ace)
+        * 0x1F0;
 };
 
 bool operator<(const HandValue& lhs, const HandValue& rhs)
@@ -871,10 +897,17 @@ size_t g_lookup_misses = 0;
 
 HandValue EvaluateCards(const Card* cards, size_t count)
 {
+    // std::cout << "====================" << std::endl;
+    // for (int i = 0; i < count; i++) {
+    //     std::cout << cards[i];
+    // }
+    // std::cout << std::endl;
+
     CardBitSet card_bits;
     for (size_t i = 0; i < count; ++i) {
         card_bits.AddCard(cards[i]);
     }
+    // std::cout << card_bits << std::endl;
 
 #if ENABLE_HAND_LOOKUP_TABLE
     card_bits.SortSuits();
@@ -1108,67 +1141,70 @@ int nCk(int n, int k)
     return nCk;
 }
 
+void comb(int N, int K)
+{
+    std::string bitmask(K, 1); // K leading 1's
+    bitmask.resize(N, 0); // N-K trailing 0's
+
+    // print integers and permute bitmask
+    do {
+        for (int i = 0; i < N; ++i) // [0..N-1] integers
+        {
+            if (bitmask[i]) std::cout << " " << i;
+        }
+        std::cout << std::endl;
+    } while (std::prev_permutation(bitmask.begin(), bitmask.end()));
+}
 
 struct CardsGenerator
 {
-    size_t combination_counter;
+    std::vector<Card> available;
     std::vector<Card> state;
-    CardBitSet dead;
-    const int n = 52;
-    int k = 0;
+    std::vector<int> bitmask;
+    bool done = false;
 
     CardsGenerator(int k, const Card* dead_cards = nullptr, int dead_cards_count = 0) :
-        k(k)
+        bitmask(k, 1)
     {
+        CardBitSet dead;
         for (int i = 0; i < dead_cards_count; ++i) {
             dead.AddCard(dead_cards[i]);
         }
-        combination_counter = nCk(n - dead_cards_count, k);
-        state.resize(k);
-        for (int i = 0; i < k; ++i) {
-            state[i] = i;
+        for (int i = 0; i < 52; ++i) {
+            if (!dead.HasCard(Card(i))) {
+                available.push_back(Card(i));
+            }
         }
-        if (k != 0) --state[k - 1];
+        state.resize(k);
+        bitmask.resize(available.size(), 0);
     }
 
     bool next()
     {
-        if (k == 0 || combination_counter-- == 0)
-        {
+        if (done) {
             return false;
         }
-
-        for (int i = k - 1; i >= 0; i--)
+        int j = 0;
+        for (int i = 0; i < available.size(); ++i) // [0..N-1] integers
         {
-            ++state[i];
-            while (dead.HasCard(state[i]) && state[i].index < n - k + i) {
-                ++state[i];
+            if (bitmask[i]) {
+                state[j++] = available[i];
             }
-
-            // If "overflow", move to the element before.
-            if (state[i].index > n - k + i) continue;
-
-            // Reset the next elements.
-            for (int j = i + 1; j < k; j++) {
-                state[j].index = state[j - 1].index + 1;
-                while (dead.HasCard(state[j]) && state[j].index < n - k + j) {
-                    ++state[j];
-                }
-            }
-            break;
         }
-
+        done = !std::prev_permutation(bitmask.begin(), bitmask.end());
         return true;
     }
+
 };
+
 
 void TestGen()
 {
-    std::vector<Card> dead_cards = ParseCards("3h4h5h6h7h8h9hThJhQhKh 3c4c5c6c7c8c9cTcJcQcKc 3d4d5d6d7d8d9dTdJdQdKd 3s4s5s6s7s8s9sTsJsQsKs");
+    std::vector<Card> dead_cards = ParseCards("2h3h4h5h6h7h8h9hThJhQhKhAh 2c4c5c6c7c8c9cTcJcQcAc 3d4d5d6d7d8d9dTdJdQdKd 3s4s5s6s7s8s9sTsJsQsKs");
     CardsGenerator gen(2, dead_cards.data(), dead_cards.size());
     int count = 0;
     while (gen.next()) {
-        for (auto& card : gen.state) {
+        for (Card card : gen.state) {
             std::cout << card;
         }
         std::cout << " ";
@@ -1234,9 +1270,21 @@ std::ostream& operator << (std::ostream& os, const HandStats& stats)
     return os;
 }
 
+constexpr size_t NUM_OF_DISTINCT_HANDS = 4746;
+
+uint32_t g_card_hand_prob[52][NUM_OF_DISTINCT_HANDS] = {{0}};
+HandValue g_hand_values[NUM_OF_DISTINCT_HANDS];
+
 void LoopAllDeals()
 {
-    std::map<uint32_t, std::pair<HandValue, size_t>> all_hands;
+    struct HandTableEntry
+    {
+        HandValue value;
+        size_t times = 0;
+        int index = 0;
+        std::vector<std::array<Card, 7>> source;
+    };
+    std::map<uint32_t, HandTableEntry> all_hands;
     CardsGenerator gen(7);
 
     HandStats hand_stats;
@@ -1247,9 +1295,30 @@ void LoopAllDeals()
 
         auto it = all_hands.find(hand_value.Pack());
         if (it != all_hands.end()) {
-            it->second.second++;
+            it->second.times++;
+            it->second.source.push_back({
+                gen.state[0],
+                gen.state[1],
+                gen.state[2],
+                gen.state[3],
+                gen.state[4],
+                gen.state[5],
+                gen.state[6]
+            });
         } else {
-            all_hands[hand_value.Pack()] = {hand_value, 1};
+            all_hands[hand_value.Pack()] = HandTableEntry{
+                .value = hand_value,
+                .times = 1,
+                .source = {{
+                    gen.state[0],
+                    gen.state[1],
+                    gen.state[2],
+                    gen.state[3],
+                    gen.state[4],
+                    gen.state[5],
+                    gen.state[6]
+                }}
+            };
         }
 
         hand_stats.Add(hand_value.type);
@@ -1269,14 +1338,40 @@ void LoopAllDeals()
     std::cout << "Lookup Hits: " << g_lookup_hits << std::endl;
     std::cout << "Lookup Misses: " << g_lookup_misses << std::endl;
 
-    for (const auto& [key, hand] : all_hands) {
-        std::cout << hand.first << " |"
-            << "  packed: 0x" << std::hex << hand.first.Pack() << std::dec
-            << "  hash: " << hand.first.Hash()
-            << "  times: " << hand.second
+    int index = 0;
+    for (auto& [key, hand] : all_hands) {
+        hand.index = index++;
+        std::cout << hand.index << ": "
+            << hand.value << " |"
+            << "  packed: 0x" << std::hex << hand.value.Pack() << std::dec
+            << "  hash: " << hand.value.Hash()
+            << "  times: " << hand.times
             << std::endl;
+
+        if (hand.index >= NUM_OF_DISTINCT_HANDS) {
+            throw std::runtime_error("Exceed NUM_OF_DISTINCT_HANDS");
+        }
+
+        g_hand_values[hand.index] = hand.value;
+        for (const auto& cards : hand.source) {
+            for (const Card& card : cards) {
+                g_card_hand_prob[card.index][hand.index]++;
+            }
+        }
     }
     std::cout << "Total hands: " << all_hands.size() << std::endl;
+
+    for (size_t hand_index = 0; hand_index < NUM_OF_DISTINCT_HANDS; hand_index++){
+        std::cout << hand_index << ": " << g_hand_values[hand_index] << std::endl;
+        for (int i = 0; i < 52; i++) {
+            if (i != 0) {
+                std::cout << ", ";
+            }
+            Card c(i);
+            std::cout << c << ": " << g_card_hand_prob[i][hand_index];
+        }
+        std::cout << std::endl;
+    }
 }
 
 void TestHash52bit()
@@ -1384,6 +1479,13 @@ Stats EquityHeadsup(const Hand& hand, const std::vector<Card>& board, bool verbo
             deal_state[7] = hand_gen.state[0];
             deal_state[8] = hand_gen.state[1];
 
+            // std::cout << std::endl;
+            // std::cout << "board_gen.state: " << board_gen.state << std::endl;
+            // std::cout << "board_gen.available: " << board_gen.available << std::endl;
+            // std::cout << "hand_gen.state: " <<  hand_gen.state << std::endl;
+            // std::cout << "hand_gen.available: " <<  hand_gen.available << std::endl;
+            // std::cout << "deal_state: " << deal_state << std::endl;
+
             auto hand_value = EvaluateCards(deal_state.data() + 2, 7);
 
             int cmp = CompareHands(our_hand_value, hand_value);
@@ -1447,6 +1549,7 @@ void RandomDealEquityLoop(int board_cards)
 {
     while (true) {
         auto deal = RandomCards(2 + board_cards);
+        // std::cout << deal << std::endl;
         DealEquity(deal, false);
     }
 }
@@ -1509,11 +1612,11 @@ int main(int argc, const char* argv[])
         DealEquity(deal, true);
     } else {
         TestEval();
-        //TestGen();
+        TestGen();
         //GenerateHandLookupTable();
-        TestHash52bit();
+        //TestHash52bit();
         //LoopAllDeals();
-        //RandomDealEquityLoop(3);
+        RandomDealEquityLoop(0);
     }
 
     return 0;
