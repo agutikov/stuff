@@ -228,7 +228,7 @@ int main(int argc, char* argv[])
 
     // Start worker threads if requested
     std::atomic<bool> should_stop{ false };
-    std::vector<std::jthread> workers;
+    std::vector<std::thread> workers;
 
     if (config.worker_threads > 0) {
         printF("Starting {} CPU-intensive worker threads...\n", config.worker_threads);
@@ -249,8 +249,9 @@ int main(int argc, char* argv[])
         printF("Stopping worker threads...\n");
         should_stop.store(true, std::memory_order_relaxed);
 
-        // No need to manually join threads when using std::jthread
-        // They will be automatically joined when the vector is destroyed
+        for (auto& worker : workers) {
+            worker.join();
+        }
     }
 
     // Calculate statistics
