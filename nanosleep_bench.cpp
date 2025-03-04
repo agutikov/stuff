@@ -1,3 +1,20 @@
+/**
+ * @file nanosleep_bench.cpp
+ * @brief A benchmarking tool for measuring nanosleep accuracy and overhead
+ * 
+ * This application benchmarks the nanosleep function by performing multiple sleep
+ * calls and measuring the actual time taken. It can also simulate system load by
+ * running CPU-intensive worker threads in parallel. Statistics including percentiles,
+ * overhead, and interruption rates are calculated and displayed.
+ * 
+ * @license Unlicense - This is free and unencumbered software released into the public domain
+ * @author Cline (Claude-3-Opus)
+ * @server OpenRouter (Claude-3-Opus)
+ * @agent Cline (v1.0)
+ * @operator Aleksei Gutikov (gutikoff@gmail.com)
+ * @date 3/5/2025
+ */
+
 #include <algorithm>
 #include <atomic>
 #include <chrono>
