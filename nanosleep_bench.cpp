@@ -27,6 +27,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <vector>
+#include <sys/prctl.h>
 
 // Fast, variadic printf replacement using write() system call and std::format
 template<typename... Args>
@@ -45,21 +46,24 @@ struct AppConfig
     long iterations = 1000;     // Number of nanosleep calls to perform
     long nanoseconds = 1000000; // Number of nanoseconds to sleep in each call
     int worker_threads = 0;     // Number of CPU-intensive worker threads
+    long timerslack = -1;       // Timer slack value in nanoseconds (-1 means don't set)
 };
 
 // Print usage information
 void print_usage(const char* program_name)
 {
-    printF("Usage: {} <iterations> <nanoseconds> [worker_threads]\n", program_name);
+    printF("Usage: {} <iterations> <nanoseconds> [worker_threads] [timerslack]\n", program_name);
     printF("  iterations     - Number of nanosleep calls to perform\n");
     printF("  nanoseconds    - Number of nanoseconds to sleep in each call\n");
     printF("  worker_threads - Number of CPU-intensive worker threads (default: 0)\n");
+    printF("  timerslack     - Timer slack value in nanoseconds (default: -1, don't set)\n");
+    printF("                   Uses PR_SET_TIMERSLACK prctl to set thread timer slack\n");
 }
 
 // Parse and validate command line arguments
 bool parse_arguments(int argc, char* argv[], AppConfig& config)
 {
-    if (argc < 3 || argc > 4) {
+    if (argc < 3 || argc > 5) {
         print_usage(argv[0]);
         return false;
     }
@@ -71,6 +75,12 @@ bool parse_arguments(int argc, char* argv[], AppConfig& config)
     config.worker_threads = 0; // Default value
     if (argc >= 4) {
         config.worker_threads = std::atoi(argv[3]);
+    }
+
+    // Parse optional timerslack argument
+    config.timerslack = -1; // Default value (don't set)
+    if (argc >= 5) {
+        config.timerslack = std::atol(argv[4]);
     }
 
     if (config.iterations <= 0 || config.nanoseconds < 0 || config.worker_threads < 0) {
@@ -122,8 +132,8 @@ BenchmarkResult run_benchmark(const AppConfig& config)
 
     // Prepare timespec structure for nanosleep
     struct timespec req, rem;
-    req.tv_sec = config.nanoseconds / 1000000000;
-    req.tv_nsec = config.nanoseconds % 1000000000;
+    req.tv_sec = 0;
+    req.tv_nsec = config.nanoseconds;
 
     // Reserve space for duration measurements
     result.durations.reserve(config.iterations);
@@ -213,6 +223,9 @@ void print_results(const Statistics& stats, const AppConfig& config)
     printF("\nResults (all times in nanoseconds):\n");
     printF("  Requested sleep time: {:.2f}\n", static_cast<double>(config.nanoseconds));
     printF("  Worker threads:       {}\n", config.worker_threads);
+    if (config.timerslack >= 0) {
+        printF("  Timer slack:          {}\n", config.timerslack);
+    }
     printF("  Average actual time:  {:.2f}\n", stats.mean);
     printF("  Percentiles:\n");
     printF("    Min:                {:.2f}\n", stats.min);
@@ -242,6 +255,14 @@ int main(int argc, char* argv[])
     }
 
     printF("Running {} iterations with {} nanoseconds sleep time...\n", config.iterations, config.nanoseconds);
+
+    // Set timer slack if requested
+    if (config.timerslack >= 0) {
+        printF("Setting timer slack to {} nanoseconds...\n", config.timerslack);
+        if (prctl(PR_SET_TIMERSLACK, config.timerslack) != 0) {
+            printF("Warning: Failed to set timer slack\n");
+        }
+    }
 
     // Start worker threads if requested
     std::atomic<bool> should_stop{ false };
