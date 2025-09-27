@@ -30,3 +30,4 @@ gradients.py
 __pycache__
 
 nanosleep_bench
+.vscode
